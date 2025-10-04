@@ -2,14 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { AIController } from './ai/AIController';
-import { GameStateManager } from './game/GameStateManager';
-import { PenguinAI } from './ai/PenguinAI';
-import authRoutes from './routes/auth';
-import gameRoutes from './routes/game';
-import aiRoutes from './routes/ai';
 
 dotenv.config();
 
@@ -22,32 +15,76 @@ const io = new Server(server, {
   }
 });
 
+const PORT = process.env.PORT || 5000;
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/game', gameRoutes);
-app.use('/api/ai', aiRoutes);
+// Basic routes
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: '🧶 Yarn Penguin AI Server is running!' });
+});
 
-// AI System
-const aiController = new AIController();
-const gameStateManager = new GameStateManager();
+// Game state (simplified for now)
+let gameState = {
+  players: new Map(),
+  penguins: [],
+  fishItems: [],
+  yarnItems: []
+};
 
 // Socket.io for real-time multiplayer
 io.on('connection', (socket) => {
   console.log(`🐧 Player connected: ${socket.id}`);
   
-  socket.on('join-game', async (playerData) => {
-    try {
-      const gameRoom = await gameStateManager.joinGame(socket.id, playerData);
-      socket.join(gameRoom.id);
-      socket.emit('game-joined', gameRoom);
-      
-      // Initialize AI for this player
-      const penguinAI = new PenguinAI(playerData.id);
+  socket.on('join-game', (playerData: any) => {
+    gameState.players.set(socket.id, playerData);
+    socket.emit('game-joined', { 
+      playerId: socket.id, 
+      gameState: {
+        playerCount: gameState.players.size,
+        penguins: gameState.penguins.length
+      }
+    });
+    
+    // Broadcast to all players
+    io.emit('player-joined', { 
+      playerId: socket.id,
+      playerCount: gameState.players.size 
+    });
+  });
+  
+  socket.on('penguin-action', (actionData: any) => {
+    // AI decision processing (simplified)
+    const decision = {
+      penguinId: actionData.penguinId,
+      action: actionData.action,
+      timestamp: Date.now()
+    };
+    
+    // Broadcast to all players in the game
+    io.emit('penguin-decision', decision);
+  });
+  
+  socket.on('disconnect', () => {
+    console.log(`🐧 Player disconnected: ${socket.id}`);
+    gameState.players.delete(socket.id);
+    
+    // Notify other players
+    io.emit('player-left', { 
+      playerId: socket.id,
+      playerCount: gameState.players.size 
+    });
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🧶 Yarn Penguin AI World Backend Ready!`);
+  console.log(`📡 Socket.IO enabled for real-time multiplayer`);
+});
       await penguinAI.initialize();
       
       // Start AI thinking loop

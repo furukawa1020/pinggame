@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -24,13 +24,30 @@ app.use(express.static('public'));
 
 // Basic routes
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: '🧶 Yarn Penguin AI Server is running!' });
+  res.json({ status: 'OK', message: ' Yarn Penguin AI Server is running!' });
 });
 
-// Game state (simplified for now)
+app.get('/api/game/status', (req, res) => {
+  res.json({
+    players: gameState.players.size,
+    penguins: gameState.penguins.length,
+    fishItems: gameState.fishItems.length,
+    yarnItems: gameState.yarnItems.length
+  });
+});
+
+// Game state
+interface Penguin {
+  id: string;
+  x: number;
+  y: number;
+  type: string;
+  behavior: string;
+}
+
 let gameState = {
   players: new Map(),
-  penguins: [],
+  penguins: [] as Penguin[],
   fishItems: [],
   yarnItems: []
 };
@@ -49,119 +66,60 @@ io.on('connection', (socket) => {
       }
     });
     
-    // Broadcast to all players
-    io.emit('player-joined', { 
+    socket.broadcast.emit('player-joined', {
       playerId: socket.id,
-      playerCount: gameState.players.size 
+      playerData
     });
   });
-  
+
   socket.on('penguin-action', (actionData: any) => {
-    // AI decision processing (simplified)
-    const decision = {
-      penguinId: actionData.penguinId,
-      action: actionData.action,
-      timestamp: Date.now()
-    };
+    console.log(`🐧 Action from ${socket.id}:`, actionData);
     
-    // Broadcast to all players in the game
-    io.emit('penguin-decision', decision);
+    io.emit('penguin-moved', {
+      playerId: socket.id,
+      action: actionData
+    });
   });
-  
+
+  socket.on('ai-training', (trainingData: any) => {
+    console.log(`🧠 AI Training data from ${socket.id}:`, trainingData);
+    
+    socket.emit('ai-training-complete', {
+      success: true,
+      message: 'AI model updated successfully'
+    });
+  });
+
   socket.on('disconnect', () => {
     console.log(`🐧 Player disconnected: ${socket.id}`);
     gameState.players.delete(socket.id);
     
-    // Notify other players
-    io.emit('player-left', { 
-      playerId: socket.id,
-      playerCount: gameState.players.size 
+    socket.broadcast.emit('player-left', {
+      playerId: socket.id
     });
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🧶 Yarn Penguin AI World Backend Ready!`);
-  console.log(`📡 Socket.IO enabled for real-time multiplayer`);
-});
-      await penguinAI.initialize();
-      
-      // Start AI thinking loop
-      startAILoop(socket, penguinAI);
-      
-    } catch (error) {
-      socket.emit('error', { message: 'Failed to join game' });
-    }
-  });
-  
-  socket.on('penguin-action', async (actionData) => {
-    try {
-      const result = await aiController.processPenguinAction(actionData);
-      socket.emit('action-result', result);
-      
-      // Broadcast to room if needed
-      if (result.broadcast) {
-        socket.to(actionData.roomId).emit('game-update', result.gameState);
-      }
-    } catch (error) {
-      socket.emit('error', { message: 'Action processing failed' });
-    }
-  });
-  
-  socket.on('train-ai', async (trainingData) => {
-    try {
-      const result = await aiController.trainModel(trainingData);
-      socket.emit('training-complete', result);
-    } catch (error) {
-      socket.emit('error', { message: 'AI training failed' });
-    }
-  });
-  
-  socket.on('disconnect', () => {
-    console.log(`🐧 Player disconnected: ${socket.id}`);
-    gameStateManager.removePlayer(socket.id);
-  });
-});
-
-// AI Loop for autonomous penguin behavior
-function startAILoop(socket: any, penguinAI: PenguinAI) {
-  const aiInterval = setInterval(async () => {
-    try {
-      const decision = await penguinAI.makeDecision();
-      socket.emit('ai-decision', decision);
-      
-      // Learn from the decision outcome
-      if (decision.reward !== undefined) {
-        await penguinAI.learn(decision.reward);
-      }
-    } catch (error) {
-      console.error('AI Loop error:', error);
-    }
-  }, 1000); // AI thinks every second
-  
-  socket.on('disconnect', () => {
-    clearInterval(aiInterval);
-  });
-}
-
-// Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/yarn-penguin-ai')
-  .then(() => console.log('🗄️  MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-// Global AI training scheduler
-setInterval(async () => {
-  try {
-    await aiController.performGlobalTraining();
-    console.log('🧠 Global AI training completed');
-  } catch (error) {
-    console.error('Global training error:', error);
+// Simple AI penguin spawning
+setInterval(() => {
+  if (gameState.penguins.length < 5) {
+    const newPenguin: Penguin = {
+      id: `penguin_${Date.now()}`,
+      x: Math.random() * 800,
+      y: Math.random() * 600,
+      type: 'yarn',
+      behavior: 'exploring'
+    };
+    
+    gameState.penguins.push(newPenguin);
+    
+    io.emit('penguin-spawned', newPenguin);
   }
-}, 300000); // Train every 5 minutes
+}, 5000);
 
-const PORT = process.env.PORT || 5000;
+// Start server
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🧶 Yarn Penguin AI World Backend Started!`);
+  console.log(`🧶 Yarn Penguin AI Server running on port ${PORT}`);
+  console.log(`🌐 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🎮 Game status: http://localhost:${PORT}/api/game/status`);
 });

@@ -106,6 +106,7 @@
             font-size: 32px;
             font-weight: 800;
             background: linear-gradient(45deg, #8B4513, #D2691E, #CD853F);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
@@ -264,90 +265,344 @@
 </head>
 <body>
     <div id="gameContainer">
-        <div id="title">🐧 ぺんぎんぽよぽよファクトリー 🐧</div>
+        <div id="title">🧶 わたわたペンギンニットワールド 🧶</div>
+        
         <div id="ui">
-            <div>🐟 魚: <span id="fishCount">0</span></div>
-            <div>⭐ スコア: <span id="score">0</span></div>
-            <div>🐧 ペンギン: <span id="penguinCount">3</span></div>
+            <div class="stat-item">
+                <span class="stat-icon">🐟</span>
+                <span>さかな: </span>
+                <span class="stat-value" id="fishCount">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">⭐</span>
+                <span>スコア: </span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">🐧</span>
+                <span>ペンギン: </span>
+                <span class="stat-value" id="penguinCount">3</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">🧶</span>
+                <span>毛糸玉: </span>
+                <span class="stat-value" id="yarnCount">0</span>
+            </div>
         </div>
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <button class="cute-button" onclick="addPenguin()">🐧+ ペンギン追加</button>
+        
+        <div class="mood-indicator">
+            <div style="font-weight: 600; color: #8B4513; font-size: 14px;">🌟 ファクトリームード</div>
+            <div class="mood-bar">
+                <div class="mood-fill" id="moodFill" style="width: 70%"></div>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="900" height="700"></canvas>
+        
+        <div class="control-panel">
+            <button class="yarn-button" onclick="addPenguin()">
+                🐧 ペンギン追加 (コスト: 10🐟)
+            </button>
+            <button class="yarn-button" onclick="upgradeFactory()">
+                ⚡ 工場アップグレード (コスト: 50🐟)
+            </button>
+            <button class="yarn-button special-button" onclick="activateTurboMode()">
+                🚀 ターボモード (コスト: 100🐟)
+            </button>
+            <button class="yarn-button" onclick="buyDecoration()">
+                🎨 デコレーション (コスト: 25🐟)
+            </button>
+        </div>
+        
+        <div class="settings-panel">
+            <button class="mini-button" onclick="toggleSound()" title="音響効果">🔊</button>
+            <button class="mini-button" onclick="saveGame()" title="ゲーム保存">💾</button>
+            <button class="mini-button" onclick="showStats()" title="統計情報">📊</button>
+        </div>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // ゲーム状態
+        // ゲーム状態管理
         let gameState = {
             fish: 0,
             score: 0,
+            yarnBalls: 0,
+            factoryLevel: 1,
+            mood: 70,
+            turboMode: false,
+            turboTimer: 0,
             penguins: [],
             fishItems: [],
+            yarnItems: [],
             particles: [],
-            time: 0
+            decorations: [],
+            time: 0,
+            soundEnabled: true,
+            savedAt: Date.now()
         };
         
-        // ペンギンクラス（シンプルAI搭載）
-        class Penguin {
+        // 最新式ニューラルネットワーククラス（軽量版）
+        class MiniNeuralNetwork {
+            constructor(inputSize, hiddenSize, outputSize) {
+                this.inputSize = inputSize;
+                this.hiddenSize = hiddenSize;
+                this.outputSize = outputSize;
+                
+                // 重み初期化（Xavier初期化）
+                this.weightsIH = this.initializeWeights(inputSize, hiddenSize);
+                this.weightsHO = this.initializeWeights(hiddenSize, outputSize);
+                this.biasH = new Array(hiddenSize).fill(0).map(() => (Math.random() - 0.5) * 0.1);
+                this.biasO = new Array(outputSize).fill(0).map(() => (Math.random() - 0.5) * 0.1);
+                
+                // 学習率
+                this.learningRate = 0.01;
+            }
+            
+            initializeWeights(rows, cols) {
+                const weights = [];
+                const limit = Math.sqrt(6 / (rows + cols));
+                for (let i = 0; i < rows; i++) {
+                    weights[i] = [];
+                    for (let j = 0; j < cols; j++) {
+                        weights[i][j] = (Math.random() - 0.5) * 2 * limit;
+                    }
+                }
+                return weights;
+            }
+            
+            sigmoid(x) {
+                return 1 / (1 + Math.exp(-Math.max(-500, Math.min(500, x))));
+            }
+            
+            tanh(x) {
+                return Math.tanh(Math.max(-500, Math.min(500, x)));
+            }
+            
+            forward(inputs) {
+                // 隠れ層の計算
+                const hidden = [];
+                for (let i = 0; i < this.hiddenSize; i++) {
+                    let sum = this.biasH[i];
+                    for (let j = 0; j < this.inputSize; j++) {
+                        sum += inputs[j] * this.weightsIH[j][i];
+                    }
+                    hidden[i] = this.tanh(sum);
+                }
+                
+                // 出力層の計算
+                const outputs = [];
+                for (let i = 0; i < this.outputSize; i++) {
+                    let sum = this.biasO[i];
+                    for (let j = 0; j < this.hiddenSize; j++) {
+                        sum += hidden[j] * this.weightsHO[j][i];
+                    }
+                    outputs[i] = this.sigmoid(sum);
+                }
+                
+                return { hidden, outputs };
+            }
+            
+            // 強化学習的な重み更新
+            updateWeights(inputs, reward, action) {
+                const { hidden, outputs } = this.forward(inputs);
+                
+                // 簡単な重み更新（方策勾配的）
+                const delta = reward * this.learningRate;
+                
+                // 出力層の更新
+                for (let i = 0; i < this.outputSize; i++) {
+                    this.biasO[i] += delta * (i === action ? 1 : -0.1);
+                    for (let j = 0; j < this.hiddenSize; j++) {
+                        this.weightsHO[j][i] += delta * hidden[j] * (i === action ? 1 : -0.1);
+                    }
+                }
+                
+                // 隠れ層の更新
+                for (let i = 0; i < this.hiddenSize; i++) {
+                    this.biasH[i] += delta * 0.1;
+                    for (let j = 0; j < this.inputSize; j++) {
+                        this.weightsIH[j][i] += delta * inputs[j] * 0.1;
+                    }
+                }
+            }
+        }
+        
+        // 進化したペンギンクラス（ニューラルネットワーク搭載）
+        class IntelligentPenguin {
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
                 this.targetX = x;
                 this.targetY = y;
-                this.speed = 0.5 + Math.random() * 0.5;
-                this.size = 25 + Math.random() * 10;
-                this.color = this.randomPenguinColor();
-                this.state = 'idle'; // idle, moving, working
+                this.baseSpeed = 0.8 + Math.random() * 0.7;
+                this.size = 30 + Math.random() * 15;
+                this.color = this.generateYarnColor();
+                this.state = 'idle';
                 this.workTimer = 0;
-                this.personalityTimer = Math.random() * 1000;
-                this.wobbleOffset = Math.random() * Math.PI * 2;
                 this.happiness = 50 + Math.random() * 50;
-                this.lastAction = 0;
+                this.energy = 100;
+                this.intelligence = 0.5 + Math.random() * 0.5;
+                this.personality = Math.random();
                 this.direction = Math.random() > 0.5 ? 1 : -1;
-            }
-            
-            randomPenguinColor() {
-                const colors = ['#2C3E50', '#34495E', '#5D6D7E', '#85929E'];
-                return colors[Math.floor(Math.random() * colors.length)];
-            }
-            
-            // ペンギンAI：シンプルな状態機械
-            think() {
-                this.personalityTimer++;
+                this.lastAction = 0;
+                this.yarnTexture = this.generateYarnTexture();
                 
-                // 基本的な行動決定AI
-                if (this.state === 'idle') {
-                    if (Math.random() < 0.02) { // 2%の確率で行動開始
-                        if (gameState.fishItems.length > 0 && Math.random() < 0.7) {
-                            // 魚を取りに行く
-                            this.goToNearestFish();
-                        } else {
-                            // ランダムに移動
-                            this.setRandomTarget();
-                        }
-                    }
-                } else if (this.state === 'moving') {
-                    if (this.reachedTarget()) {
-                        this.state = 'working';
-                        this.workTimer = 30 + Math.random() * 60;
-                    }
-                } else if (this.state === 'working') {
-                    this.workTimer--;
-                    if (this.workTimer <= 0) {
-                        this.state = 'idle';
-                        this.collectNearbyFish();
-                    }
+                // ニューラルネットワーク初期化
+                this.brain = new MiniNeuralNetwork(8, 12, 4); // 8入力, 12隠れ, 4出力
+                this.memory = [];
+                this.lastReward = 0;
+                this.actionHistory = [];
+                
+                // アニメーション用
+                this.wobbleOffset = Math.random() * Math.PI * 2;
+                this.blinkTimer = Math.random() * 200;
+                this.isBlinking = false;
+                
+                // 毛糸風テクスチャ
+                this.stitchPattern = this.generateStitchPattern();
+            }
+            
+            generateYarnColor() {
+                const yarnColors = [
+                    '#E6B3BA', '#F4D3AE', '#B8E6B8', '#A8D8EA',
+                    '#FFD93D', '#FF9FF3', '#A8DADC', '#F1C0E8'
+                ];
+                return yarnColors[Math.floor(Math.random() * yarnColors.length)];
+            }
+            
+            generateYarnTexture() {
+                return {
+                    roughness: Math.random() * 0.3 + 0.1,
+                    shine: Math.random() * 0.5 + 0.2,
+                    pattern: Math.floor(Math.random() * 3)
+                };
+            }
+            
+            generateStitchPattern() {
+                const patterns = [];
+                for (let i = 0; i < 8; i++) {
+                    patterns.push({
+                        x: (Math.random() - 0.5) * this.size * 0.8,
+                        y: (Math.random() - 0.5) * this.size * 0.8,
+                        size: 2 + Math.random() * 3
+                    });
+                }
+                return patterns;
+            }
+            
+            // 高度なAI思考プロセス
+            think() {
+                // 環境認識（8次元入力ベクトル）
+                const inputs = this.perceiveEnvironment();
+                
+                // ニューラルネットワークで行動決定
+                const { outputs } = this.brain.forward(inputs);
+                
+                // 行動選択（ε-グリーディ法）
+                let action;
+                if (Math.random() < 0.1) { // 10%の確率でランダム探索
+                    action = Math.floor(Math.random() * 4);
+                } else {
+                    action = outputs.indexOf(Math.max(...outputs));
                 }
                 
-                // 幸福度の自然な変化
-                this.happiness += (Math.random() - 0.5) * 0.5;
-                this.happiness = Math.max(0, Math.min(100, this.happiness));
+                // 行動実行
+                this.executeAction(action);
+                
+                // 報酬計算と学習
+                const reward = this.calculateReward();
+                if (this.actionHistory.length > 0) {
+                    const lastInput = this.actionHistory[this.actionHistory.length - 1].input;
+                    const lastAction = this.actionHistory[this.actionHistory.length - 1].action;
+                    this.brain.updateWeights(lastInput, reward, lastAction);
+                }
+                
+                // 履歴保存
+                this.actionHistory.push({ input: inputs, action, reward });
+                if (this.actionHistory.length > 10) {
+                    this.actionHistory.shift();
+                }
+                
+                // 基本的な生理状態更新
+                this.energy -= 0.1;
+                if (this.energy < 0) this.energy = 0;
+                if (this.energy < 20) this.happiness -= 0.5;
+                
+                // まばたき制御
+                this.blinkTimer++;
+                if (this.blinkTimer > 180 + Math.random() * 120) {
+                    this.isBlinking = true;
+                    setTimeout(() => this.isBlinking = false, 150);
+                    this.blinkTimer = 0;
+                }
             }
             
-            goToNearestFish() {
-                if (gameState.fishItems.length === 0) return;
+            perceiveEnvironment() {
+                const nearestFish = this.findNearestFish();
+                const nearestPenguin = this.findNearestPenguin();
+                const nearestYarn = this.findNearestYarn();
                 
+                return [
+                    this.x / canvas.width,                                    // 自分のX位置（正規化）
+                    this.y / canvas.height,                                   // 自分のY位置（正規化）
+                    this.happiness / 100,                                     // 幸福度
+                    this.energy / 100,                                        // エネルギー
+                    nearestFish ? this.distanceTo(nearestFish.x, nearestFish.y) / 500 : 1, // 最近傍魚への距離
+                    nearestPenguin ? this.distanceTo(nearestPenguin.x, nearestPenguin.y) / 500 : 1, // 最近傍ペンギンへの距離
+                    nearestYarn ? this.distanceTo(nearestYarn.x, nearestYarn.y) / 500 : 1, // 最近傍毛糸への距離
+                    gameState.mood / 100                                      // 全体ムード
+                ];
+            }
+            
+            executeAction(action) {
+                switch (action) {
+                    case 0: // 魚を探しに行く
+                        this.goToNearestFish();
+                        break;
+                    case 1: // 毛糸玉を探しに行く
+                        this.goToNearestYarn();
+                        break;
+                    case 2: // 他のペンギンと社交
+                        this.socializeWithNearestPenguin();
+                        break;
+                    case 3: // 休憩
+                        this.rest();
+                        break;
+                }
+            }
+            
+            calculateReward() {
+                let reward = 0;
+                
+                // 基本生存報酬
+                reward += 0.1;
+                
+                // 幸福度に基づく報酬
+                reward += (this.happiness - 50) / 100;
+                
+                // 魚収集報酬
+                if (this.state === 'working' && this.workTimer > 0) {
+                    reward += 0.5;
+                }
+                
+                // エネルギー管理報酬
+                if (this.energy > 80) reward += 0.2;
+                if (this.energy < 20) reward -= 0.3;
+                
+                // 社交報酬
+                const nearbyPenguins = this.countNearbyPenguins();
+                if (nearbyPenguins > 0 && nearbyPenguins < 3) {
+                    reward += 0.3;
+                }
+                
+                return reward;
+            }
+            
+            findNearestFish() {
+                if (gameState.fishItems.length === 0) return null;
                 let nearest = gameState.fishItems[0];
                 let minDist = this.distanceTo(nearest.x, nearest.y);
                 
@@ -358,16 +613,81 @@
                         nearest = fish;
                     }
                 }
-                
-                this.targetX = nearest.x;
-                this.targetY = nearest.y;
-                this.state = 'moving';
+                return nearest;
             }
             
-            setRandomTarget() {
-                this.targetX = 50 + Math.random() * (canvas.width - 100);
-                this.targetY = 50 + Math.random() * (canvas.height - 100);
-                this.state = 'moving';
+            findNearestPenguin() {
+                let nearest = null;
+                let minDist = Infinity;
+                
+                for (let penguin of gameState.penguins) {
+                    if (penguin === this) continue;
+                    let dist = this.distanceTo(penguin.x, penguin.y);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearest = penguin;
+                    }
+                }
+                return nearest;
+            }
+            
+            findNearestYarn() {
+                if (gameState.yarnItems.length === 0) return null;
+                let nearest = gameState.yarnItems[0];
+                let minDist = this.distanceTo(nearest.x, nearest.y);
+                
+                for (let yarn of gameState.yarnItems) {
+                    let dist = this.distanceTo(yarn.x, yarn.y);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearest = yarn;
+                    }
+                }
+                return nearest;
+            }
+            
+            countNearbyPenguins() {
+                let count = 0;
+                for (let penguin of gameState.penguins) {
+                    if (penguin !== this && this.distanceTo(penguin.x, penguin.y) < 100) {
+                        count++;
+                    }
+                }
+                return count;
+            }
+            
+            goToNearestFish() {
+                const fish = this.findNearestFish();
+                if (fish) {
+                    this.targetX = fish.x;
+                    this.targetY = fish.y;
+                    this.state = 'moving';
+                }
+            }
+            
+            goToNearestYarn() {
+                const yarn = this.findNearestYarn();
+                if (yarn) {
+                    this.targetX = yarn.x;
+                    this.targetY = yarn.y;
+                    this.state = 'moving';
+                }
+            }
+            
+            socializeWithNearestPenguin() {
+                const penguin = this.findNearestPenguin();
+                if (penguin) {
+                    this.targetX = penguin.x + (Math.random() - 0.5) * 100;
+                    this.targetY = penguin.y + (Math.random() - 0.5) * 100;
+                    this.state = 'moving';
+                    this.happiness += 5;
+                }
+            }
+            
+            rest() {
+                this.state = 'idle';
+                this.energy += 2;
+                if (this.energy > 100) this.energy = 100;
             }
             
             distanceTo(x, y) {
@@ -375,35 +695,66 @@
             }
             
             reachedTarget() {
-                return this.distanceTo(this.targetX, this.targetY) < 5;
+                return this.distanceTo(this.targetX, this.targetY) < 8;
             }
             
-            collectNearbyFish() {
+            collectNearbyItems() {
+                // 魚収集
                 for (let i = gameState.fishItems.length - 1; i >= 0; i--) {
                     let fish = gameState.fishItems[i];
-                    if (this.distanceTo(fish.x, fish.y) < 40) {
+                    if (this.distanceTo(fish.x, fish.y) < 50) {
                         gameState.fishItems.splice(i, 1);
                         gameState.fish++;
-                        gameState.score += 10;
-                        this.happiness += 10;
-                        
-                        // 可愛いパーティクル効果
-                        this.createHappyParticles();
+                        gameState.score += 15;
+                        this.happiness += 15;
+                        this.energy += 10;
+                        this.createYarnParticles();
+                        break;
+                    }
+                }
+                
+                // 毛糸玉収集
+                for (let i = gameState.yarnItems.length - 1; i >= 0; i--) {
+                    let yarn = gameState.yarnItems[i];
+                    if (this.distanceTo(yarn.x, yarn.y) < 50) {
+                        gameState.yarnItems.splice(i, 1);
+                        gameState.yarnBalls++;
+                        gameState.score += 25;
+                        this.happiness += 20;
+                        this.createSpecialParticles();
                         break;
                     }
                 }
             }
             
-            createHappyParticles() {
-                for (let i = 0; i < 8; i++) {
+            createYarnParticles() {
+                for (let i = 0; i < 12; i++) {
                     gameState.particles.push({
                         x: this.x,
-                        y: this.y - 10,
-                        vx: (Math.random() - 0.5) * 4,
-                        vy: -Math.random() * 3 - 1,
-                        life: 60,
-                        maxLife: 60,
-                        color: `hsl(${Math.random() * 60 + 300}, 70%, 70%)`
+                        y: this.y - 15,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: -Math.random() * 4 - 2,
+                        life: 80,
+                        maxLife: 80,
+                        color: `hsl(${Math.random() * 60 + 320}, 75%, 75%)`,
+                        size: 3 + Math.random() * 4,
+                        type: 'yarn'
+                    });
+                }
+            }
+            
+            createSpecialParticles() {
+                for (let i = 0; i < 16; i++) {
+                    gameState.particles.push({
+                        x: this.x,
+                        y: this.y - 20,
+                        vx: (Math.random() - 0.5) * 8,
+                        vy: -Math.random() * 6 - 3,
+                        life: 120,
+                        maxLife: 120,
+                        color: `hsl(${Math.random() * 360}, 80%, 70%)`,
+                        size: 4 + Math.random() * 6,
+                        type: 'special'
                     });
                 }
             }
@@ -411,19 +762,96 @@
             update() {
                 this.think();
                 
-                // 滑らかな移動
+                // スムーズな移動（イージング）
                 if (this.state === 'moving') {
                     let dx = this.targetX - this.x;
                     let dy = this.targetY - this.y;
-                    this.x += dx * this.speed * 0.1;
-                    this.y += dy * this.speed * 0.1;
+                    let speed = this.baseSpeed * (gameState.turboMode ? 2 : 1);
+                    
+                    this.x += dx * speed * 0.08;
+                    this.y += dy * speed * 0.08;
                     
                     this.direction = dx > 0 ? 1 : -1;
+                    
+                    if (this.reachedTarget()) {
+                        this.state = 'working';
+                        this.workTimer = 40 + Math.random() * 80;
+                    }
+                } else if (this.state === 'working') {
+                    this.workTimer--;
+                    if (this.workTimer <= 0) {
+                        this.state = 'idle';
+                        this.collectNearbyItems();
+                    }
                 }
                 
-                // 境界チェック
-                this.x = Math.max(this.size, Math.min(canvas.width - this.size, this.x));
-                this.y = Math.max(this.size, Math.min(canvas.height - this.size, this.y));
+                // 境界チェック（ソフトバウンス）
+                const margin = this.size;
+                if (this.x < margin) {
+                    this.x = margin;
+                    this.targetX = margin + 50;
+                }
+                if (this.x > canvas.width - margin) {
+                    this.x = canvas.width - margin;
+                    this.targetX = canvas.width - margin - 50;
+                }
+                if (this.y < margin) {
+                    this.y = margin;
+                    this.targetY = margin + 50;
+                }
+                if (this.y > canvas.height - margin) {
+                    this.y = canvas.height - margin;
+                    this.targetY = canvas.height - margin - 50;
+                }
+                
+                // 幸福度の自然変化
+                this.happiness += (Math.random() - 0.5) * 0.3;
+                this.happiness = Math.max(0, Math.min(100, this.happiness));
+            }
+            
+            drawYarnTexture() {
+                // 毛糸風のテクスチャを描画
+                ctx.save();
+                
+                // 基本色
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.size, this.size * 1.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 毛糸の縫い目パターン
+                ctx.strokeStyle = this.adjustBrightness(this.color, -0.2);
+                ctx.lineWidth = 1.5;
+                ctx.lineCap = 'round';
+                
+                for (let stitch of this.stitchPattern) {
+                    ctx.beginPath();
+                    ctx.moveTo(stitch.x - stitch.size, stitch.y);
+                    ctx.lineTo(stitch.x + stitch.size, stitch.y);
+                    ctx.stroke();
+                }
+                
+                // ハイライト
+                ctx.fillStyle = this.adjustBrightness(this.color, 0.3);
+                ctx.globalAlpha = 0.6;
+                ctx.beginPath();
+                ctx.ellipse(-this.size * 0.3, -this.size * 0.4, this.size * 0.3, this.size * 0.6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                
+                ctx.restore();
+            }
+            
+            adjustBrightness(color, amount) {
+                // 色の明度を調整
+                const num = parseInt(color.replace("#",""), 16);
+                const amt = Math.round(2.55 * amount * 100);
+                const R = (num >> 16) + amt;
+                const G = (num >> 8 & 0x00FF) + amt;
+                const B = (num & 0x0000FF) + amt;
+                return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                    (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
             }
             
             draw() {
@@ -431,124 +859,366 @@
                 ctx.translate(this.x, this.y);
                 ctx.scale(this.direction, 1);
                 
-                // ぽよぽよアニメーション
-                let wobble = Math.sin((gameState.time + this.wobbleOffset) * 0.1) * 2;
+                // ぽよぽよアニメーション（より柔らかく）
+                let wobble = Math.sin((gameState.time + this.wobbleOffset) * 0.08) * 3;
+                let stretch = 1 + Math.sin((gameState.time + this.wobbleOffset) * 0.12) * 0.05;
                 ctx.translate(0, wobble);
+                ctx.scale(stretch, 1/stretch);
                 
-                // 影
-                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                // ソフトシャドウ
+                ctx.fillStyle = 'rgba(139, 69, 19, 0.2)';
                 ctx.beginPath();
-                ctx.ellipse(0, this.size + 5, this.size * 0.8, this.size * 0.3, 0, 0, Math.PI * 2);
+                ctx.ellipse(2, this.size + 8, this.size * 0.9, this.size * 0.4, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // 体
-                ctx.fillStyle = this.color;
+                // 毛糸テクスチャの体
+                this.drawYarnTexture();
+                
+                // お腹（より柔らかい毛糸風）
+                ctx.fillStyle = '#FFFEF7';
                 ctx.beginPath();
-                ctx.ellipse(0, 0, this.size, this.size * 1.2, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, 8, this.size * 0.65, this.size * 0.85, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // お腹
-                ctx.fillStyle = '#FFFFFF';
-                ctx.beginPath();
-                ctx.ellipse(0, 5, this.size * 0.6, this.size * 0.8, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // くちばし
-                ctx.fillStyle = '#FF8C00';
-                ctx.beginPath();
-                ctx.ellipse(-this.size * 0.3, -5, 8, 5, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 目
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(-this.size * 0.2, -this.size * 0.2, 4, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 幸せ目
-                if (this.happiness > 70) {
-                    ctx.strokeStyle = '#000';
-                    ctx.lineWidth = 2;
+                // お腹の縫い目
+                ctx.strokeStyle = 'rgba(139, 69, 19, 0.3)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
                     ctx.beginPath();
-                    ctx.arc(-this.size * 0.2, -this.size * 0.2, 6, 0, Math.PI);
+                    ctx.moveTo(-this.size * 0.4, -5 + i * 8);
+                    ctx.lineTo(this.size * 0.4, -5 + i * 8);
                     ctx.stroke();
                 }
                 
-                // 働いている時のエフェクト
-                if (this.state === 'working') {
-                    ctx.fillStyle = '#FFD700';
-                    ctx.font = '16px Arial';
+                // かわいいくちばし
+                ctx.fillStyle = '#FFB347';
+                ctx.beginPath();
+                ctx.ellipse(-this.size * 0.35, -2, 10, 6, -0.2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 目（まばたき対応）
+                if (!this.isBlinking) {
+                    // 白目
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.beginPath();
+                    ctx.ellipse(-this.size * 0.25, -this.size * 0.25, 6, 8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 瞳
+                    ctx.fillStyle = '#2C3E50';
+                    ctx.beginPath();
+                    ctx.ellipse(-this.size * 0.25, -this.size * 0.25, 3, 4, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ハイライト
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.beginPath();
+                    ctx.ellipse(-this.size * 0.25 + 1, -this.size * 0.25 - 1, 1.5, 2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // まばたき
+                    ctx.strokeStyle = '#2C3E50';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(-this.size * 0.31, -this.size * 0.25);
+                    ctx.lineTo(-this.size * 0.19, -this.size * 0.25);
+                    ctx.stroke();
+                }
+                
+                // 幸せ度による表情変化
+                if (this.happiness > 80) {
+                    ctx.strokeStyle = '#FF69B4';
+                    ctx.lineWidth = 2;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.arc(-this.size * 0.15, -this.size * 0.05, 8, 0.2, Math.PI - 0.2);
+                    ctx.stroke();
+                }
+                
+                // エネルギー状態の表示
+                if (this.energy < 30) {
+                    ctx.fillStyle = 'rgba(255, 255, 0, 0.7)';
+                    ctx.font = '12px Nunito';
                     ctx.textAlign = 'center';
-                    ctx.fillText('💫', 0, -this.size - 10);
+                    ctx.fillText('💤', 0, -this.size - 15);
+                }
+                
+                // 作業中エフェクト
+                if (this.state === 'working') {
+                    const sparkles = ['✨', '⭐', '💫', '🌟'];
+                    ctx.fillStyle = '#FFD700';
+                    ctx.font = '16px Nunito';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(sparkles[Math.floor(gameState.time / 20) % sparkles.length], 0, -this.size - 20);
+                }
+                
+                // 毛糸フィラメント効果
+                if (Math.random() < 0.3) {
+                    ctx.strokeStyle = this.adjustBrightness(this.color, 0.4);
+                    ctx.lineWidth = 0.5;
+                    ctx.globalAlpha = 0.6;
+                    for (let i = 0; i < 3; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo((Math.random() - 0.5) * this.size * 1.5, (Math.random() - 0.5) * this.size * 1.5);
+                        ctx.lineTo((Math.random() - 0.5) * this.size * 1.5, (Math.random() - 0.5) * this.size * 1.5);
+                        ctx.stroke();
+                    }
+                    ctx.globalAlpha = 1;
                 }
                 
                 ctx.restore();
             }
         }
         
-        // 魚アイテムクラス
-        class FishItem {
+        // 高品質魚アイテムクラス
+        class YarnFish {
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.size = 15;
+                this.size = 18 + Math.random() * 8;
                 this.bobOffset = Math.random() * Math.PI * 2;
                 this.sparkleTimer = Math.random() * 100;
+                this.color = this.generateFishColor();
+                this.yarnTexture = this.generateYarnTexture();
+                this.swimDirection = Math.random() * Math.PI * 2;
+                this.swimSpeed = 0.3 + Math.random() * 0.5;
+                this.glowIntensity = 0.5 + Math.random() * 0.5;
+            }
+            
+            generateFishColor() {
+                const fishColors = [
+                    '#FFB6C1', '#FFA07A', '#F0E68C', '#98FB98',
+                    '#87CEEB', '#DDA0DD', '#F5DEB3', '#FFE4E1'
+                ];
+                return fishColors[Math.floor(Math.random() * fishColors.length)];
+            }
+            
+            generateYarnTexture() {
+                return {
+                    pattern: Math.floor(Math.random() * 4),
+                    density: 0.3 + Math.random() * 0.4,
+                    shine: Math.random() * 0.7 + 0.3
+                };
             }
             
             update() {
-                this.sparkleTimer++;
-                if (this.sparkleTimer > 120) {
-                    this.sparkleTimer = 0;
-                    // きらきらエフェクト
-                    gameState.particles.push({
-                        x: this.x + (Math.random() - 0.5) * 20,
-                        y: this.y + (Math.random() - 0.5) * 20,
-                        vx: 0,
-                        vy: -0.5,
-                        life: 30,
-                        maxLife: 30,
-                        color: '#87CEEB'
-                    });
+                // 自然な泳ぎ
+                this.x += Math.cos(this.swimDirection) * this.swimSpeed;
+                this.y += Math.sin(this.swimDirection) * this.swimSpeed * 0.5;
+                
+                // 方向転換
+                if (Math.random() < 0.02) {
+                    this.swimDirection += (Math.random() - 0.5) * 0.5;
                 }
+                
+                // 境界でバウンス
+                if (this.x < this.size || this.x > canvas.width - this.size) {
+                    this.swimDirection = Math.PI - this.swimDirection;
+                }
+                if (this.y < this.size || this.y > canvas.height - this.size) {
+                    this.swimDirection = -this.swimDirection;
+                }
+                
+                // 境界内に保持
+                this.x = Math.max(this.size, Math.min(canvas.width - this.size, this.x));
+                this.y = Math.max(this.size, Math.min(canvas.height - this.size, this.y));
+                
+                this.sparkleTimer++;
+                if (this.sparkleTimer > 80) {
+                    this.sparkleTimer = 0;
+                    this.createSparkle();
+                }
+            }
+            
+            createSparkle() {
+                gameState.particles.push({
+                    x: this.x + (Math.random() - 0.5) * 25,
+                    y: this.y + (Math.random() - 0.5) * 25,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: -0.5 - Math.random() * 1,
+                    life: 60,
+                    maxLife: 60,
+                    color: '#87CEEB',
+                    size: 2 + Math.random() * 3,
+                    type: 'sparkle'
+                });
             }
             
             draw() {
                 ctx.save();
-                ctx.translate(this.x, this.y + Math.sin((gameState.time + this.bobOffset) * 0.1) * 3);
+                ctx.translate(this.x, this.y + Math.sin((gameState.time + this.bobOffset) * 0.08) * 4);
+                
+                // グロー効果
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 8 * this.glowIntensity;
                 
                 // 魚の影
-                ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                ctx.shadowColor = 'rgba(139, 69, 19, 0.3)';
+                ctx.shadowBlur = 4;
+                ctx.fillStyle = 'rgba(139, 69, 19, 0.2)';
                 ctx.beginPath();
-                ctx.ellipse(0, 8, this.size * 0.8, this.size * 0.3, 0, 0, Math.PI * 2);
+                ctx.ellipse(2, 12, this.size * 0.8, this.size * 0.4, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // 魚
-                ctx.fillStyle = '#FF6B9D';
+                ctx.shadowBlur = 0;
+                
+                // 魚本体（毛糸風）
+                ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.ellipse(0, 0, this.size, this.size * 0.7, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, 0, this.size, this.size * 0.75, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // 魚の尻尾
-                ctx.fillStyle = '#FF8FB3';
+                // 毛糸の縫い目
+                ctx.strokeStyle = this.adjustBrightness(this.color, -0.3);
+                ctx.lineWidth = 1;
+                ctx.lineCap = 'round';
+                for (let i = 0; i < 4; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(-this.size * 0.6 + i * (this.size * 0.3), -2);
+                    ctx.lineTo(-this.size * 0.6 + i * (this.size * 0.3), 2);
+                    ctx.stroke();
+                }
+                
+                // 尻尾（毛糸風）
+                ctx.fillStyle = this.adjustBrightness(this.color, -0.1);
                 ctx.beginPath();
                 ctx.moveTo(this.size, 0);
-                ctx.lineTo(this.size + 8, -6);
-                ctx.lineTo(this.size + 8, 6);
+                ctx.lineTo(this.size + 12, -8);
+                ctx.lineTo(this.size + 12, 8);
                 ctx.closePath();
                 ctx.fill();
                 
-                // 魚の目
-                ctx.fillStyle = '#000';
+                // 目
+                ctx.fillStyle = '#FFFFFF';
                 ctx.beginPath();
-                ctx.arc(-this.size * 0.3, -3, 2, 0, Math.PI * 2);
+                ctx.arc(-this.size * 0.4, -4, 4, 0, Math.PI * 2);
                 ctx.fill();
+                
+                ctx.fillStyle = '#2C3E50';
+                ctx.beginPath();
+                ctx.arc(-this.size * 0.4, -4, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // ハイライト
+                ctx.fillStyle = this.adjustBrightness(this.color, 0.4);
+                ctx.globalAlpha = 0.7;
+                ctx.beginPath();
+                ctx.ellipse(-this.size * 0.3, -this.size * 0.2, this.size * 0.3, this.size * 0.2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
                 
                 ctx.restore();
             }
+            
+            adjustBrightness(color, amount) {
+                const num = parseInt(color.replace("#",""), 16);
+                const amt = Math.round(2.55 * amount * 100);
+                const R = (num >> 16) + amt;
+                const G = (num >> 8 & 0x00FF) + amt;
+                const B = (num & 0x0000FF) + amt;
+                return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                    (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+            }
         }
         
-        // パーティクルシステム
+        // 毛糸玉アイテムクラス
+        class YarnBall {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = 20 + Math.random() * 10;
+                this.bobOffset = Math.random() * Math.PI * 2;
+                this.color = this.generateYarnColor();
+                this.rotationSpeed = 0.02 + Math.random() * 0.03;
+                this.rotation = 0;
+                this.glowPulse = Math.random() * Math.PI * 2;
+            }
+            
+            generateYarnColor() {
+                const yarnColors = [
+                    '#FFD700', '#FF69B4', '#32CD32', '#FF6347',
+                    '#9370DB', '#20B2AA', '#FF1493', '#00CED1'
+                ];
+                return yarnColors[Math.floor(Math.random() * yarnColors.length)];
+            }
+            
+            update() {
+                this.rotation += this.rotationSpeed;
+                this.glowPulse += 0.05;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y + Math.sin((gameState.time + this.bobOffset) * 0.06) * 5);
+                ctx.rotate(this.rotation);
+                
+                // グロー効果
+                const glowIntensity = 0.5 + Math.sin(this.glowPulse) * 0.3;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 12 * glowIntensity;
+                
+                // 毛糸玉の影
+                ctx.shadowColor = 'rgba(139, 69, 19, 0.3)';
+                ctx.shadowBlur = 6;
+                ctx.fillStyle = 'rgba(139, 69, 19, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(3, 15, this.size * 0.9, this.size * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+                
+                // 毛糸玉本体
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 毛糸の巻き模様
+                ctx.strokeStyle = this.adjustBrightness(this.color, -0.2);
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const radius = this.size * 0.7;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, radius, angle, angle + Math.PI * 0.3);
+                    ctx.stroke();
+                }
+                
+                // ハイライト
+                ctx.fillStyle = this.adjustBrightness(this.color, 0.4);
+                ctx.globalAlpha = 0.6;
+                ctx.beginPath();
+                ctx.ellipse(-this.size * 0.3, -this.size * 0.3, this.size * 0.4, this.size * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                
+                // 毛糸の端
+                ctx.strokeStyle = this.adjustBrightness(this.color, -0.1);
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(this.size * 0.8, 0);
+                ctx.lineTo(this.size * 1.2, -this.size * 0.3);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+            
+            adjustBrightness(color, amount) {
+                const num = parseInt(color.replace("#",""), 16);
+                const amt = Math.round(2.55 * amount * 100);
+                const R = (num >> 16) + amt;
+                const G = (num >> 8 & 0x00FF) + amt;
+                const B = (num & 0x0000FF) + amt;
+                return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                    (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+            }
+        }
+        
+        // 高度なパーティクルシステム
         function updateParticles() {
             for (let i = gameState.particles.length - 1; i >= 0; i--) {
                 let p = gameState.particles[i];
@@ -556,38 +1226,197 @@
                 p.y += p.vy;
                 p.life--;
                 
+                // 重力効果
+                if (p.type !== 'sparkle') {
+                    p.vy += 0.05;
+                }
+                
+                // 空気抵抗
+                p.vx *= 0.99;
+                p.vy *= 0.99;
+                
                 if (p.life <= 0) {
                     gameState.particles.splice(i, 1);
                 } else {
                     ctx.save();
-                    ctx.globalAlpha = p.life / p.maxLife;
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-                    ctx.fill();
+                    
+                    const alpha = p.life / p.maxLife;
+                    ctx.globalAlpha = alpha;
+                    
+                    if (p.type === 'yarn') {
+                        // 毛糸パーティクル
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.ellipse(p.x, p.y, p.size, p.size * 0.6, gameState.time * 0.1, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 毛糸の繊維
+                        ctx.strokeStyle = p.color;
+                        ctx.lineWidth = 1;
+                        for (let j = 0; j < 3; j++) {
+                            ctx.beginPath();
+                            ctx.moveTo(p.x + (Math.random() - 0.5) * p.size, p.y);
+                            ctx.lineTo(p.x + (Math.random() - 0.5) * p.size, p.y + 2);
+                            ctx.stroke();
+                        }
+                    } else if (p.type === 'special') {
+                        // 特別パーティクル
+                        ctx.shadowColor = p.color;
+                        ctx.shadowBlur = 8;
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    } else {
+                        // 基本パーティクル
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size || 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
                     ctx.restore();
                 }
             }
         }
         
-        // 魚を自動生成
-        function spawnFish() {
-            if (Math.random() < 0.02 && gameState.fishItems.length < 10) {
-                gameState.fishItems.push(new FishItem(
+        // アイテム生成システム
+        function spawnItems() {
+            // 魚生成
+            if (Math.random() < 0.025 && gameState.fishItems.length < 12) {
+                gameState.fishItems.push(new YarnFish(
+                    Math.random() * (canvas.width - 100) + 50,
+                    Math.random() * (canvas.height - 100) + 50
+                ));
+            }
+            
+            // 毛糸玉生成（レア）
+            if (Math.random() < 0.008 && gameState.yarnItems.length < 6) {
+                gameState.yarnItems.push(new YarnBall(
                     Math.random() * (canvas.width - 100) + 50,
                     Math.random() * (canvas.height - 100) + 50
                 ));
             }
         }
         
-        // ペンギンを追加
+        // ゲーム機能
         function addPenguin() {
-            if (gameState.penguins.length < 10) {
-                gameState.penguins.push(new Penguin(
+            if (gameState.fish >= 10 && gameState.penguins.length < 15) {
+                gameState.fish -= 10;
+                gameState.penguins.push(new IntelligentPenguin(
                     Math.random() * (canvas.width - 100) + 50,
                     Math.random() * (canvas.height - 100) + 50
                 ));
                 updateUI();
+                createPurchaseEffect();
+            }
+        }
+        
+        function upgradeFactory() {
+            const cost = 50 * gameState.factoryLevel;
+            if (gameState.fish >= cost) {
+                gameState.fish -= cost;
+                gameState.factoryLevel++;
+                gameState.mood += 10;
+                updateUI();
+                createUpgradeEffect();
+            }
+        }
+        
+        function activateTurboMode() {
+            if (gameState.fish >= 100 && !gameState.turboMode) {
+                gameState.fish -= 100;
+                gameState.turboMode = true;
+                gameState.turboTimer = 600; // 10秒間
+                updateUI();
+                createTurboEffect();
+            }
+        }
+        
+        function buyDecoration() {
+            if (gameState.fish >= 25) {
+                gameState.fish -= 25;
+                gameState.mood += 5;
+                addDecoration();
+                updateUI();
+                createDecorationEffect();
+            }
+        }
+        
+        function addDecoration() {
+            const decorations = ['🌸', '🌺', '🎀', '⭐', '🌈', '🦋', '🌙', '☘️'];
+            gameState.decorations.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                emoji: decorations[Math.floor(Math.random() * decorations.length)],
+                size: 20 + Math.random() * 15,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.02
+            });
+        }
+        
+        function createPurchaseEffect() {
+            for (let i = 0; i < 20; i++) {
+                gameState.particles.push({
+                    x: canvas.width - 100,
+                    y: canvas.height - 100,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: -Math.random() * 6 - 2,
+                    life: 100,
+                    maxLife: 100,
+                    color: `hsl(${Math.random() * 60 + 300}, 80%, 70%)`,
+                    size: 4 + Math.random() * 6,
+                    type: 'special'
+                });
+            }
+        }
+        
+        function createUpgradeEffect() {
+            for (let i = 0; i < 30; i++) {
+                gameState.particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: -Math.random() * 8 - 3,
+                    life: 120,
+                    maxLife: 120,
+                    color: `hsl(${Math.random() * 60 + 45}, 90%, 60%)`,
+                    size: 5 + Math.random() * 8,
+                    type: 'special'
+                });
+            }
+        }
+        
+        function createTurboEffect() {
+            for (let i = 0; i < 50; i++) {
+                gameState.particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: -Math.random() * 10 - 4,
+                    life: 150,
+                    maxLife: 150,
+                    color: `hsl(${Math.random() * 360}, 90%, 70%)`,
+                    size: 6 + Math.random() * 10,
+                    type: 'special'
+                });
+            }
+        }
+        
+        function createDecorationEffect() {
+            for (let i = 0; i < 15; i++) {
+                gameState.particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: -Math.random() * 4 - 1,
+                    life: 80,
+                    maxLife: 80,
+                    color: `hsl(${Math.random() * 360}, 70%, 80%)`,
+                    size: 3 + Math.random() * 5,
+                    type: 'sparkle'
+                });
             }
         }
         
@@ -596,45 +1425,185 @@
             document.getElementById('fishCount').textContent = gameState.fish;
             document.getElementById('score').textContent = gameState.score;
             document.getElementById('penguinCount').textContent = gameState.penguins.length;
+            document.getElementById('yarnCount').textContent = gameState.yarnBalls;
+            
+            // ムードバー更新
+            const moodFill = document.getElementById('moodFill');
+            const clampedMood = Math.max(0, Math.min(100, gameState.mood));
+            moodFill.style.width = clampedMood + '%';
+            
+            // ボタンの有効/無効状態
+            const buttons = document.querySelectorAll('.yarn-button');
+            buttons[0].disabled = gameState.fish < 10; // ペンギン追加
+            buttons[1].disabled = gameState.fish < 50 * gameState.factoryLevel; // アップグレード
+            buttons[2].disabled = gameState.fish < 100 || gameState.turboMode; // ターボ
+            buttons[3].disabled = gameState.fish < 25; // デコレーション
         }
         
-        // 背景描画
+        // 背景描画（毛糸風）
         function drawBackground() {
-            // 工場の床
-            ctx.fillStyle = '#E8F4FD';
+            // 基本背景
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#F0F8FF');
+            gradient.addColorStop(0.5, '#E6F3FF');
+            gradient.addColorStop(1, '#DDE9F0');
+            ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // 工場のライン
-            ctx.strokeStyle = 'rgba(74, 144, 226, 0.3)';
-            ctx.lineWidth = 2;
-            for (let i = 0; i < canvas.width; i += 60) {
+            // 毛糸の織り模様
+            ctx.strokeStyle = 'rgba(139, 69, 19, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // 横の織り
+            for (let i = 0; i < canvas.height; i += 20) {
                 ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, canvas.height);
+                ctx.moveTo(0, i + Math.sin(gameState.time * 0.01 + i * 0.1) * 2);
+                ctx.lineTo(canvas.width, i + Math.sin(gameState.time * 0.01 + i * 0.1) * 2);
                 ctx.stroke();
             }
-            for (let i = 0; i < canvas.height; i += 60) {
+            
+            // 縦の織り
+            for (let i = 0; i < canvas.width; i += 20) {
                 ctx.beginPath();
-                ctx.moveTo(0, i);
-                ctx.lineTo(canvas.width, i);
+                ctx.moveTo(i + Math.sin(gameState.time * 0.008 + i * 0.1) * 2, 0);
+                ctx.lineTo(i + Math.sin(gameState.time * 0.008 + i * 0.1) * 2, canvas.height);
                 ctx.stroke();
             }
+            
+            // デコレーション描画
+            for (let deco of gameState.decorations) {
+                ctx.save();
+                ctx.translate(deco.x, deco.y);
+                ctx.rotate(deco.rotation);
+                ctx.font = deco.size + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(deco.emoji, 0, 0);
+                deco.rotation += deco.rotationSpeed;
+                ctx.restore();
+            }
+        }
+        
+        // 音響効果（簡易版）
+        function playSound(frequency, duration) {
+            if (!gameState.soundEnabled) return;
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (e) {
+                // 音響効果が使用できない場合は無音
+            }
+        }
+        
+        // ユーティリティ関数
+        function toggleSound() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            const button = document.querySelector('.settings-panel .mini-button');
+            button.textContent = gameState.soundEnabled ? '🔊' : '🔇';
+        }
+        
+        function saveGame() {
+            const saveData = {
+                fish: gameState.fish,
+                score: gameState.score,
+                yarnBalls: gameState.yarnBalls,
+                factoryLevel: gameState.factoryLevel,
+                mood: gameState.mood,
+                penguinCount: gameState.penguins.length,
+                decorationCount: gameState.decorations.length,
+                savedAt: Date.now()
+            };
+            localStorage.setItem('yarnPenguinFactory', JSON.stringify(saveData));
+            
+            // 保存エフェクト
+            createPurchaseEffect();
+            playSound(523.25, 0.2); // C5
+        }
+        
+        function loadGame() {
+            const saveData = localStorage.getItem('yarnPenguinFactory');
+            if (saveData) {
+                const data = JSON.parse(saveData);
+                gameState.fish = data.fish || 0;
+                gameState.score = data.score || 0;
+                gameState.yarnBalls = data.yarnBalls || 0;
+                gameState.factoryLevel = data.factoryLevel || 1;
+                gameState.mood = data.mood || 70;
+                
+                // ペンギンを復元
+                for (let i = 0; i < (data.penguinCount || 3); i++) {
+                    gameState.penguins.push(new IntelligentPenguin(
+                        Math.random() * (canvas.width - 100) + 50,
+                        Math.random() * (canvas.height - 100) + 50
+                    ));
+                }
+                
+                // デコレーションを復元
+                for (let i = 0; i < (data.decorationCount || 0); i++) {
+                    addDecoration();
+                }
+            }
+        }
+        
+        function showStats() {
+            const stats = `
+🎯 統計情報 🎯
+━━━━━━━━━━━━━━━━━━
+🐟 総魚数: ${gameState.fish}
+⭐ スコア: ${gameState.score}
+🧶 毛糸玉: ${gameState.yarnBalls}
+🐧 ペンギン数: ${gameState.penguins.length}
+🏭 工場レベル: ${gameState.factoryLevel}
+🌟 ムード: ${Math.round(gameState.mood)}%
+🎨 デコレーション: ${gameState.decorations.length}
+━━━━━━━━━━━━━━━━━━
+            `;
+            alert(stats);
         }
         
         // メインゲームループ
         function gameLoop() {
             gameState.time++;
             
+            // ターボモード管理
+            if (gameState.turboMode) {
+                gameState.turboTimer--;
+                if (gameState.turboTimer <= 0) {
+                    gameState.turboMode = false;
+                }
+            }
+            
+            // ムード自然変化
+            gameState.mood += (Math.random() - 0.5) * 0.1;
+            gameState.mood = Math.max(0, Math.min(100, gameState.mood));
+            
             // 背景描画
             drawBackground();
             
-            // 魚生成
-            spawnFish();
+            // アイテム生成
+            spawnItems();
             
             // 魚更新・描画
             for (let fish of gameState.fishItems) {
                 fish.update();
                 fish.draw();
+            }
+            
+            // 毛糸玉更新・描画
+            for (let yarn of gameState.yarnItems) {
+                yarn.update();
+                yarn.draw();
             }
             
             // ペンギン更新・描画
@@ -654,17 +1623,27 @@
         
         // 初期化
         function init() {
-            // 初期ペンギンを3匹配置
-            for (let i = 0; i < 3; i++) {
-                gameState.penguins.push(new Penguin(
-                    100 + i * 200,
+            // セーブデータ読み込み
+            loadGame();
+            
+            // 初期ペンギンが足りない場合は追加
+            while (gameState.penguins.length < 3) {
+                gameState.penguins.push(new IntelligentPenguin(
+                    100 + gameState.penguins.length * 150,
                     300 + Math.random() * 100
                 ));
             }
             
-            // 初期魚を少し配置
-            for (let i = 0; i < 3; i++) {
-                gameState.fishItems.push(new FishItem(
+            // 初期アイテム配置
+            for (let i = 0; i < 4; i++) {
+                gameState.fishItems.push(new YarnFish(
+                    Math.random() * (canvas.width - 100) + 50,
+                    Math.random() * (canvas.height - 100) + 50
+                ));
+            }
+            
+            for (let i = 0; i < 2; i++) {
+                gameState.yarnItems.push(new YarnBall(
                     Math.random() * (canvas.width - 100) + 50,
                     Math.random() * (canvas.height - 100) + 50
                 ));
@@ -672,19 +1651,71 @@
             
             updateUI();
             gameLoop();
+            
+            // 浮遊毛糸玉デコレーション
+            createFloatingYarns();
         }
         
-        // タッチ・クリックで魚追加
+        function createFloatingYarns() {
+            for (let i = 0; i < 5; i++) {
+                const yarn = document.createElement('div');
+                yarn.className = 'floating-yarn';
+                yarn.textContent = '🧶';
+                yarn.style.left = Math.random() * window.innerWidth + 'px';
+                yarn.style.top = Math.random() * window.innerHeight + 'px';
+                yarn.style.animationDelay = Math.random() * 4 + 's';
+                document.body.appendChild(yarn);
+            }
+        }
+        
+        // イベントリスナー
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
-            gameState.fishItems.push(new FishItem(x, y));
+            // 魚追加
+            gameState.fishItems.push(new YarnFish(x, y));
+            
+            // クリックエフェクト
+            for (let i = 0; i < 8; i++) {
+                gameState.particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: -Math.random() * 4 - 1,
+                    life: 60,
+                    maxLife: 60,
+                    color: `hsl(${Math.random() * 360}, 70%, 70%)`,
+                    size: 3 + Math.random() * 4,
+                    type: 'sparkle'
+                });
+            }
+            
+            playSound(659.25, 0.1); // E5
         });
+        
+        // タッチデバイス対応
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            gameState.fishItems.push(new YarnFish(x, y));
+        });
+        
+        // 自動保存
+        setInterval(() => {
+            saveGame();
+        }, 30000); // 30秒ごと
         
         // ゲーム開始
         init();
+    </script>
+</body>
+</html>
     </script>
 </body>
 </html>

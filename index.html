@@ -810,34 +810,38 @@
             }
             
             drawYarnTexture() {
-                // 毛糸風のテクスチャを描画
+                // ペンギンの体（毛糸風）
                 ctx.save();
                 
-                // 基本色
-                ctx.fillStyle = this.color;
+                // 体の基本形（ペンギンらしい楕円）
+                ctx.fillStyle = '#2C3E50'; // ペンギンの黒い部分
                 ctx.beginPath();
-                ctx.ellipse(0, 0, this.size, this.size * 1.3, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, 5, this.size * 0.8, this.size * 1.1, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // 毛糸の縫い目パターン
-                ctx.strokeStyle = this.adjustBrightness(this.color, -0.2);
-                ctx.lineWidth = 1.5;
+                // お腹の白い部分
+                ctx.fillStyle = '#FFFEF7';
+                ctx.beginPath();
+                ctx.ellipse(0, 8, this.size * 0.55, this.size * 0.9, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 毛糸の縫い目パターン（体に）
+                ctx.strokeStyle = 'rgba(139, 69, 19, 0.3)';
+                ctx.lineWidth = 1;
                 ctx.lineCap = 'round';
                 
                 for (let stitch of this.stitchPattern) {
                     ctx.beginPath();
-                    ctx.moveTo(stitch.x - stitch.size, stitch.y);
-                    ctx.lineTo(stitch.x + stitch.size, stitch.y);
+                    ctx.moveTo(stitch.x - stitch.size * 0.5, stitch.y);
+                    ctx.lineTo(stitch.x + stitch.size * 0.5, stitch.y);
                     ctx.stroke();
                 }
                 
-                // ハイライト
-                ctx.fillStyle = this.adjustBrightness(this.color, 0.3);
-                ctx.globalAlpha = 0.6;
+                // ペンギンの頭
+                ctx.fillStyle = '#2C3E50';
                 ctx.beginPath();
-                ctx.ellipse(-this.size * 0.3, -this.size * 0.4, this.size * 0.3, this.size * 0.6, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, -this.size * 0.6, this.size * 0.7, this.size * 0.6, 0, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.globalAlpha = 1;
                 
                 ctx.restore();
             }
@@ -860,8 +864,8 @@
                 ctx.scale(this.direction, 1);
                 
                 // ぽよぽよアニメーション（より柔らかく）
-                let wobble = Math.sin((gameState.time + this.wobbleOffset) * 0.08) * 3;
-                let stretch = 1 + Math.sin((gameState.time + this.wobbleOffset) * 0.12) * 0.05;
+                let wobble = Math.sin((gameState.time + this.wobbleOffset) * 0.08) * 2;
+                let stretch = 1 + Math.sin((gameState.time + this.wobbleOffset) * 0.12) * 0.03;
                 ctx.translate(0, wobble);
                 ctx.scale(stretch, 1/stretch);
                 
@@ -871,57 +875,76 @@
                 ctx.ellipse(2, this.size + 8, this.size * 0.9, this.size * 0.4, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // 毛糸テクスチャの体
+                // ペンギンの体（毛糸テクスチャ）
                 this.drawYarnTexture();
                 
-                // お腹（より柔らかい毛糸風）
-                ctx.fillStyle = '#FFFEF7';
+                // ペンギンの翼
+                ctx.fillStyle = '#2C3E50';
                 ctx.beginPath();
-                ctx.ellipse(0, 8, this.size * 0.65, this.size * 0.85, 0, 0, Math.PI * 2);
+                ctx.ellipse(-this.size * 0.6, 0, this.size * 0.25, this.size * 0.7, -0.3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(this.size * 0.6, 0, this.size * 0.25, this.size * 0.7, 0.3, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // お腹の縫い目
-                ctx.strokeStyle = 'rgba(139, 69, 19, 0.3)';
-                ctx.lineWidth = 1;
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(-this.size * 0.4, -5 + i * 8);
-                    ctx.lineTo(this.size * 0.4, -5 + i * 8);
-                    ctx.stroke();
-                }
-                
-                // かわいいくちばし
+                // ペンギンの足
                 ctx.fillStyle = '#FFB347';
                 ctx.beginPath();
-                ctx.ellipse(-this.size * 0.35, -2, 10, 6, -0.2, 0, Math.PI * 2);
+                ctx.ellipse(-this.size * 0.2, this.size + 5, 8, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(this.size * 0.2, this.size + 5, 8, 12, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // 目（まばたき対応）
+                // ペンギンのくちばし
+                ctx.fillStyle = '#FFB347';
+                ctx.beginPath();
+                ctx.moveTo(-this.size * 0.45, -this.size * 0.6);
+                ctx.lineTo(-this.size * 0.65, -this.size * 0.55);
+                ctx.lineTo(-this.size * 0.45, -this.size * 0.5);
+                ctx.closePath();
+                ctx.fill();
+                
+                // ペンギンの目（まばたき対応）
                 if (!this.isBlinking) {
                     // 白目
                     ctx.fillStyle = '#FFFFFF';
                     ctx.beginPath();
-                    ctx.ellipse(-this.size * 0.25, -this.size * 0.25, 6, 8, 0, 0, Math.PI * 2);
+                    ctx.ellipse(-this.size * 0.25, -this.size * 0.7, 8, 10, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.ellipse(this.size * 0.25, -this.size * 0.7, 8, 10, 0, 0, Math.PI * 2);
                     ctx.fill();
                     
                     // 瞳
                     ctx.fillStyle = '#2C3E50';
                     ctx.beginPath();
-                    ctx.ellipse(-this.size * 0.25, -this.size * 0.25, 3, 4, 0, 0, Math.PI * 2);
+                    ctx.ellipse(-this.size * 0.25, -this.size * 0.7, 4, 6, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.ellipse(this.size * 0.25, -this.size * 0.7, 4, 6, 0, 0, Math.PI * 2);
                     ctx.fill();
                     
                     // ハイライト
                     ctx.fillStyle = '#FFFFFF';
                     ctx.beginPath();
-                    ctx.ellipse(-this.size * 0.25 + 1, -this.size * 0.25 - 1, 1.5, 2, 0, 0, Math.PI * 2);
+                    ctx.ellipse(-this.size * 0.25 + 2, -this.size * 0.7 - 2, 2, 3, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.ellipse(this.size * 0.25 + 2, -this.size * 0.7 - 2, 2, 3, 0, 0, Math.PI * 2);
                     ctx.fill();
                 } else {
                     // まばたき
                     ctx.strokeStyle = '#2C3E50';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 3;
+                    ctx.lineCap = 'round';
                     ctx.beginPath();
-                    ctx.moveTo(-this.size * 0.31, -this.size * 0.25);
-                    ctx.lineTo(-this.size * 0.19, -this.size * 0.25);
+                    ctx.moveTo(-this.size * 0.33, -this.size * 0.7);
+                    ctx.lineTo(-this.size * 0.17, -this.size * 0.7);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(this.size * 0.17, -this.size * 0.7);
+                    ctx.lineTo(this.size * 0.33, -this.size * 0.7);
                     ctx.stroke();
                 }
                 
@@ -931,16 +954,23 @@
                     ctx.lineWidth = 2;
                     ctx.lineCap = 'round';
                     ctx.beginPath();
-                    ctx.arc(-this.size * 0.15, -this.size * 0.05, 8, 0.2, Math.PI - 0.2);
+                    ctx.arc(0, -this.size * 0.45, 12, 0.2, Math.PI - 0.2);
+                    ctx.stroke();
+                } else if (this.happiness < 30) {
+                    ctx.strokeStyle = '#4169E1';
+                    ctx.lineWidth = 2;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.arc(0, -this.size * 0.4, 10, Math.PI + 0.2, 2 * Math.PI - 0.2);
                     ctx.stroke();
                 }
                 
                 // エネルギー状態の表示
                 if (this.energy < 30) {
                     ctx.fillStyle = 'rgba(255, 255, 0, 0.7)';
-                    ctx.font = '12px Nunito';
+                    ctx.font = '14px Nunito';
                     ctx.textAlign = 'center';
-                    ctx.fillText('💤', 0, -this.size - 15);
+                    ctx.fillText('💤', 0, -this.size - 20);
                 }
                 
                 // 作業中エフェクト
@@ -949,18 +979,18 @@
                     ctx.fillStyle = '#FFD700';
                     ctx.font = '16px Nunito';
                     ctx.textAlign = 'center';
-                    ctx.fillText(sparkles[Math.floor(gameState.time / 20) % sparkles.length], 0, -this.size - 20);
+                    ctx.fillText(sparkles[Math.floor(gameState.time / 20) % sparkles.length], 0, -this.size - 25);
                 }
                 
-                // 毛糸フィラメント効果
-                if (Math.random() < 0.3) {
-                    ctx.strokeStyle = this.adjustBrightness(this.color, 0.4);
-                    ctx.lineWidth = 0.5;
-                    ctx.globalAlpha = 0.6;
-                    for (let i = 0; i < 3; i++) {
+                // 毛糸の質感エフェクト
+                if (Math.random() < 0.1) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.globalAlpha = 0.4;
+                    for (let i = 0; i < 2; i++) {
                         ctx.beginPath();
-                        ctx.moveTo((Math.random() - 0.5) * this.size * 1.5, (Math.random() - 0.5) * this.size * 1.5);
-                        ctx.lineTo((Math.random() - 0.5) * this.size * 1.5, (Math.random() - 0.5) * this.size * 1.5);
+                        ctx.moveTo((Math.random() - 0.5) * this.size, (Math.random() - 0.5) * this.size);
+                        ctx.lineTo((Math.random() - 0.5) * this.size, (Math.random() - 0.5) * this.size);
                         ctx.stroke();
                     }
                     ctx.globalAlpha = 1;
@@ -1483,12 +1513,31 @@
             }
         }
         
-        // 音響効果（簡易版）
+        // 音響効果（簡易版・エラー対策）
+        let audioContext = null;
+        
+        function initAudioContext() {
+            if (!audioContext && gameState.soundEnabled) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.log('Audio not supported');
+                    gameState.soundEnabled = false;
+                }
+            }
+        }
+        
         function playSound(frequency, duration) {
             if (!gameState.soundEnabled) return;
             
             try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                initAudioContext();
+                if (!audioContext) return;
+                
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
                 
@@ -1496,13 +1545,13 @@
                 gainNode.connect(audioContext.destination);
                 
                 oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
                 
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + duration);
             } catch (e) {
-                // 音響効果が使用できない場合は無音
+                console.log('Sound error:', e);
             }
         }
         
@@ -1670,6 +1719,9 @@
         
         // イベントリスナー
         canvas.addEventListener('click', (e) => {
+            // ユーザーインタラクション時にオーディオコンテキストを初期化
+            initAudioContext();
+            
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;

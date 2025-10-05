@@ -34,8 +34,8 @@ const FishItem: React.FC<{
         onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
         scale={hovered ? 1.2 : 1}
       >
-        {/* 魚の体 */}
-        <boxGeometry args={[0.8, 0.4, 0.2]} />
+        {/* 魚の体（クリック判定を大きく） */}
+        <boxGeometry args={[1.2, 0.6, 0.4]} />
         <meshStandardMaterial 
           color={hovered ? "#FFB6C1" : "#FFA07A"} 
           roughness={0.3}
@@ -276,8 +276,8 @@ const GameScene: React.FC = () => {
   // アイテム生成システム
   useEffect(() => {
     const spawnItems = () => {
-      // 魚生成
-      if (fishItems.length < 5 && Math.random() < 0.3) {
+      // 魚生成（頻度アップ）
+      if (fishItems.length < 8 && Math.random() < 0.6) {
         const newFish = {
           id: `fish_${Date.now()}_${Math.random()}`,
           position: [
@@ -316,8 +316,28 @@ const GameScene: React.FC = () => {
       score: prev.score + 10
     }));
     
-    // 収集エフェクト音（将来実装）
-    console.log('🐟 魚を獲得しました！');
+    // 収集成功メッセージ
+    console.log(`🐟 魚を獲得しました！ 合計: ${gameStats.fish + 1}匹`);
+    
+    // 成功音を鳴らす（簡易版）
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.1);
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    } catch (e) {
+      // 音が鳴らなくても続行
+    }
   }, []);
 
   // 毛糸玉収集処理

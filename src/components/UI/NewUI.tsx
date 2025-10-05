@@ -68,22 +68,44 @@ export const UI: React.FC = () => {
   }, [isConnected]);
 
   const handlePenguinAction = () => {
-    sendPenguinAction({
+    const action = {
       type: 'move',
       direction: Math.random() * Math.PI * 2,
-      timestamp: Date.now()
-    });
+      speed: 1 + Math.random() * 2,
+      timestamp: Date.now(),
+      playerId: playerName
+    };
+    
+    sendPenguinAction(action);
+    console.log('🐧 ペンギンアクション送信:', action);
   };
 
   const handleAITraining = () => {
     if (isAIActive) {
       stopAITraining();
+      console.log('🤖 AI訓練を停止しました');
     } else {
       startAITraining();
-      sendAITraining({
-        data: Array.from({ length: 8 }, () => Math.random()),
+      
+      // 高度なAI訓練データを送信
+      const trainingData = {
+        gameState: gameStats,
+        playerActions: Array.from({ length: 10 }, () => ({
+          action: 'collect_fish',
+          success: Math.random() > 0.3,
+          score: Math.floor(Math.random() * 50),
+          timestamp: Date.now() - Math.random() * 10000
+        })),
+        environmentData: {
+          fishCount: gameStats.fishItems,
+          yarnCount: gameStats.yarnItems,
+          playerLevel: gameStats.level || 1
+        },
         timestamp: Date.now()
-      });
+      };
+      
+      sendAITraining(trainingData);
+      console.log('🤖 AI訓練を開始しました:', trainingData);
     }
   };
 

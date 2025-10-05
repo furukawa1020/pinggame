@@ -5,8 +5,8 @@ import { OrbitControls, Environment, Stars } from '@react-three/drei';
 import GameScene from './components/3D/GameScene';
 import { UI } from './components/UI/NewUI';
 import { GameProvider } from './context/GameContext';
-// import { AIProvider } from './context/AIContext';
-// import { SocketProvider } from './context/SocketContext';
+import { AIProvider } from './context/AIContext';
+import { SocketProvider } from './context/SocketContext';
 // import { LoadingScreen } from './components/UI/LoadingScreen';
 import './App.css';
 
@@ -18,46 +18,50 @@ function App() {
 
   return (
     <div className="app">
-      <GameProvider>
-        {/* 3D Game World */}
-        <Canvas
-          camera={{ position: [0, 10, 10], fov: 60 }}
-          style={{ height: '100vh', width: '100vw' }}
-          shadows
-          gl={{ antialias: true, alpha: false }}
-        >
-          <Suspense fallback={null}>
-            {/* Lighting */}
-            <ambientLight intensity={0.4} />
-            <directionalLight
-              position={[10, 10, 5]}
-              intensity={1}
-              castShadow
-              shadow-mapSize-width={2048}
-              shadow-mapSize-height={2048}
-            />
+      <SocketProvider>
+        <AIProvider>
+          <GameProvider>
+            {/* 3D Game World */}
+            <Canvas
+              camera={{ position: [0, 10, 10], fov: 60 }}
+              style={{ height: '100vh', width: '100vw' }}
+              shadows
+              gl={{ antialias: true, alpha: false }}
+            >
+              <Suspense fallback={null}>
+                {/* Lighting */}
+                <ambientLight intensity={0.4} />
+                <directionalLight
+                  position={[10, 10, 5]}
+                  intensity={1}
+                  castShadow
+                  shadow-mapSize-width={2048}
+                  shadow-mapSize-height={2048}
+                />
+                
+                {/* Environment */}
+                <Environment preset="sunset" />
+                <Stars radius={100} depth={50} count={5000} factor={4} />
+                
+                {/* Game Scene */}
+                <GameScene />
+                
+                {/* Controls */}
+                <OrbitControls
+                  enablePan={true}
+                  enableZoom={true}
+                  enableRotate={true}
+                  minDistance={5}
+                  maxDistance={50}
+                />
+              </Suspense>
+            </Canvas>
             
-            {/* Environment */}
-            <Environment preset="sunset" />
-            <Stars radius={100} depth={50} count={5000} factor={4} />
-            
-            {/* Game Scene */}
-            <GameScene />
-            
-            {/* Controls */}
-            <OrbitControls
-              enablePan={true}
-              enableZoom={true}
-              enableRotate={true}
-              minDistance={5}
-              maxDistance={50}
-            />
-          </Suspense>
-        </Canvas>
-        
-        {/* UI Overlay */}
-        <UI />
-      </GameProvider>
+            {/* UI Overlay */}
+            <UI />
+          </GameProvider>
+        </AIProvider>
+      </SocketProvider>
     </div>
   );
 }

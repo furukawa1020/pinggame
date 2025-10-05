@@ -276,8 +276,8 @@ const GameScene: React.FC = () => {
   // アイテム生成システム
   useEffect(() => {
     const spawnItems = () => {
-      // 魚生成
-      if (fishItems.length < 5 && Math.random() < 0.3) {
+      // 魚生成（確率を大幅に上げる）
+      if (fishItems.length < 8 && Math.random() < 0.8) {
         const newFish = {
           id: `fish_${Date.now()}_${Math.random()}`,
           position: [
@@ -287,10 +287,11 @@ const GameScene: React.FC = () => {
           ] as [number, number, number]
         };
         setFishItems(prev => [...prev, newFish]);
+        console.log('🐟 新しい魚を生成しました:', newFish.id);
       }
       
-      // 毛糸玉生成（レア）
-      if (yarnItems.length < 3 && Math.random() < 0.1) {
+      // 毛糸玉生成（確率を上げる）
+      if (yarnItems.length < 3 && Math.random() < 0.3) {
         const newYarn = {
           id: `yarn_${Date.now()}_${Math.random()}`,
           position: [

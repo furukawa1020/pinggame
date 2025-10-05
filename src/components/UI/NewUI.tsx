@@ -14,8 +14,24 @@ export const UI: React.FC = () => {
     yarnItems: 0,
     fish: 0,
     yarnBalls: 0,
-    score: 0
+    score: 0,
+    level: 1
   });
+
+  // リアルタイムでゲーム統計を更新
+  useEffect(() => {
+    const updateStats = () => {
+      if ((window as any).gameStats) {
+        setGameStats(prev => ({
+          ...prev,
+          ...(window as any).gameStats
+        }));
+      }
+    };
+
+    const interval = setInterval(updateStats, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // ゲーム参加

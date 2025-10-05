@@ -1,13 +1,13 @@
 import React, { Suspense, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, Stars } from '@react-three/drei';
-import { Physics } from '@react-three/cannon';
-import GameScene from './components/3D/NewGameScene';
+// import { Physics } from '@react-three/cannon';
+import GameScene from './components/3D/GameScene';
 import { UI } from './components/UI/NewUI';
 import { GameProvider } from './context/GameContext';
-import { AIProvider } from './context/AIContext';
-import { SocketProvider } from './context/SocketContext';
-import { LoadingScreen } from './components/UI/LoadingScreen';
+// import { AIProvider } from './context/AIContext';
+// import { SocketProvider } from './context/SocketContext';
+// import { LoadingScreen } from './components/UI/LoadingScreen';
 import './App.css';
 
 function App() {

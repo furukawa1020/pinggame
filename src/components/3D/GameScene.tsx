@@ -301,10 +301,14 @@ const GameScene: React.FC = () => {
           ] as [number, number, number]
         };
         setYarnItems(prev => [...prev, newYarn]);
+        console.log('🧶 新しい毛糸玉を生成しました:', newYarn.id);
       }
     };
 
-    const interval = setInterval(spawnItems, 2000);
+    // 初回は即座に実行
+    spawnItems();
+    
+    const interval = setInterval(spawnItems, 1000); // 1秒間隔に短縮
     return () => clearInterval(interval);
   }, [fishItems.length, yarnItems.length]);
 

@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useSocket } from '../../context/SocketContext';
-import { useAI } from '../../context/AIContext';
+// import { useSocket } from '../../context/SocketContext';
+// import { useAI } from '../../context/AIContext';
 
 // 魚アイテムコンポーネント
 const FishItem: React.FC<{ 
@@ -129,11 +129,10 @@ const YarnBallItem: React.FC<{
 // 毛糸ペンギンコンポーネント
 const YarnPenguin: React.FC<{ 
   position: [number, number, number];
-  aiData?: any;
-}> = ({ position, aiData }) => {
+}> = ({ position }) => {
   const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
-  const { sendPenguinAction } = useSocket();
+  // const { sendPenguinAction } = useSocket();
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -144,12 +143,13 @@ const YarnPenguin: React.FC<{
   });
 
   const handleClick = useCallback(() => {
-    sendPenguinAction({
-      type: 'pet',
-      position: position,
-      timestamp: Date.now()
-    });
-  }, [sendPenguinAction, position]);
+    // sendPenguinAction({
+    //   type: 'pet',
+    //   position: position,
+    //   timestamp: Date.now()
+    // });
+    console.log('🐧 ペンギンがクリックされました！');
+  }, [position]);
 
   return (
     <group 
@@ -270,8 +270,8 @@ const GameScene: React.FC = () => {
     position: [number, number, number];
   }>>([]);
   
-  const { connected } = useSocket();
-  const { aiData } = useAI();
+  // const { connected } = useSocket();
+  // const { aiData } = useAI();
 
   // アイテム生成システム
   useEffect(() => {
@@ -373,7 +373,6 @@ const GameScene: React.FC = () => {
             0,
             Math.sin(i * 2) * 2
           ]}
-          aiData={aiData}
         />
       ))}
       

@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, Stars } from '@react-three/drei';
 import { Physics } from '@react-three/cannon';
 import GameScene from './components/3D/NewGameScene';
-import { UI } from './components/UI/UI';
+import { UI } from './components/UI/NewUI';
 import { GameProvider } from './context/GameContext';
 import { AIProvider } from './context/AIContext';
 import { SocketProvider } from './context/SocketContext';

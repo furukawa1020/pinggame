@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useSocket } from '../../context/SocketContext';
 import { useAI } from '../../context/AIContext';
-import './UI.css';
+import './NewUI.css';
 
 export const UI: React.FC = () => {
   const { isConnected, serverStatus, joinGame, sendPenguinAction, sendAITraining } = useSocket();
   const { isAIActive, aiPerformance, trainingProgress, startAITraining, stopAITraining } = useAI();
-  const [playerName, setPlayerName] = useState('Player_' + Math.floor(Math.random() * 1000));
+  const [playerName] = useState('Player_' + Math.floor(Math.random() * 1000));
   const [gameStats, setGameStats] = useState({
     players: 0,
     penguins: 0,
@@ -34,7 +34,9 @@ export const UI: React.FC = () => {
         fetch('http://localhost:5000/api/game/status')
           .then(res => res.json())
           .then(data => setGameStats(prev => ({ ...prev, ...data })))
-          .catch(err => console.error('Failed to fetch game status:', err));
+          .catch(() => {
+            // サーバーエラーは無視
+          });
       }
       
       // グローバル統計を取得
@@ -74,7 +76,7 @@ export const UI: React.FC = () => {
       {/* 接続状態 */}
       <div className="connection-status">
         <div className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}>
-          {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
+          {isConnected ? '🟢 接続済み' : '🔴 切断中'}
         </div>
         {serverStatus && (
           <div className="server-status">
@@ -87,89 +89,69 @@ export const UI: React.FC = () => {
       <div className="game-stats">
         <h3>🎮 ゲーム統計</h3>
         <div className="stat-item">
-          <span>👥 プレイヤー:</span> <span>{gameStats.players}</span>
+          <span>🐟 獲得した魚:</span> 
+          <span className="highlight">{gameStats.fish}</span>
         </div>
         <div className="stat-item">
-          <span>� 獲得した魚:</span> <span className="highlight">{gameStats.fish}</span>
+          <span>🧶 毛糸玉:</span> 
+          <span className="highlight">{gameStats.yarnBalls}</span>
         </div>
         <div className="stat-item">
-          <span>🧶 毛糸玉:</span> <span className="highlight">{gameStats.yarnBalls}</span>
+          <span>⭐ スコア:</span> 
+          <span className="highlight">{gameStats.score}</span>
         </div>
         <div className="stat-item">
-          <span>⭐ スコア:</span> <span className="highlight">{gameStats.score}</span>
+          <span>🎯 フィールドの魚:</span> 
+          <span>{gameStats.fishItems}</span>
         </div>
         <div className="stat-item">
-          <span>🎯 フィールドの魚:</span> <span>{gameStats.fishItems}</span>
+          <span>👥 プレイヤー:</span> 
+          <span>{gameStats.players}</span>
         </div>
-        <div className="stat-item">
-          <span>🧶 フィールドの毛糸:</span> <span>{gameStats.yarnItems}</span>
-        </div>
-      </div>
       </div>
 
       {/* AI制御パネル */}
-      <div className="ai-control-panel">
-        <h3>🧠 AI Control</h3>
+      <div className="ai-controls">
+        <h3>🤖 AI制御</h3>
         <div className="ai-status">
-          <span>Status:</span> 
-          <span className={isAIActive ? 'active' : 'inactive'}>
-            {isAIActive ? '🟢 Active' : '⚪ Inactive'}
-          </span>
+          <span>状態: {isAIActive ? '🟢 稼働中' : '🔴 停止中'}</span>
         </div>
         <div className="ai-performance">
-          <span>Performance:</span> 
-          <span>{aiPerformance}%</span>
+          <span>パフォーマンス: {Math.round((aiPerformance || 0) * 100)}%</span>
         </div>
-        {isAIActive && (
-          <div className="training-progress">
-            <span>Training:</span>
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${trainingProgress}%` }}
-              />
-            </div>
-            <span>{Math.round(trainingProgress)}%</span>
+        <div className="training-progress">
+          <span>学習進捗: {Math.round((trainingProgress || 0) * 100)}%</span>
+          <div className="progress-bar">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${(trainingProgress || 0) * 100}%` }}
+            ></div>
           </div>
-        )}
+        </div>
         <button 
-          className="ai-toggle-btn"
+          className="ai-training-button"
           onClick={handleAITraining}
-          disabled={!isConnected}
         >
-          {isAIActive ? '⏹️ Stop AI' : '▶️ Start AI'}
+          {isAIActive ? '🛑 AI停止' : '🚀 AI開始'}
         </button>
       </div>
 
-      {/* アクションパネル */}
-      <div className="action-panel">
-        <h3>🎮 Actions</h3>
+      {/* アクションボタン */}
+      <div className="action-controls">
+        <h3>🎮 アクション</h3>
         <button 
-          className="action-btn penguin-action"
+          className="action-button"
           onClick={handlePenguinAction}
           disabled={!isConnected}
         >
-          🐧 Move Penguin
+          🐧 ペンギン移動
         </button>
-        <input
-          type="text"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="Your name"
-          className="player-name-input"
-        />
-      </div>
-
-      {/* フルスタック情報 */}
-      <div className="tech-info">
-        <div className="tech-stack">
-          <h4>🛠️ Tech Stack</h4>
-          <div className="tech-item">Frontend: React + Three.js + TypeScript</div>
-          <div className="tech-item">Backend: Node.js + Express + Socket.io</div>
-          <div className="tech-item">AI: TensorFlow.js Neural Networks</div>
-          <div className="tech-item">Real-time: WebSocket Communication</div>
+        <div className="help-text">
+          💡 魚をクリックして獲得しよう！
         </div>
       </div>
     </div>
   );
 };
+
+export default UI;

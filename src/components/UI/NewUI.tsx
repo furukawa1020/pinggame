@@ -105,6 +105,14 @@ export const UI: React.FC = () => {
       <div className="game-stats">
         <h3>🎮 ゲーム統計</h3>
         <div className="stat-item">
+          <span>🏆 レベル:</span> 
+          <span className="highlight level">{gameStats.level}</span>
+        </div>
+        <div className="stat-item">
+          <span>⭐ スコア:</span> 
+          <span className="highlight score">{gameStats.score}</span>
+        </div>
+        <div className="stat-item">
           <span>🐟 獲得した魚:</span> 
           <span className="highlight">{gameStats.fish}</span>
         </div>
@@ -113,12 +121,12 @@ export const UI: React.FC = () => {
           <span className="highlight">{gameStats.yarnBalls}</span>
         </div>
         <div className="stat-item">
-          <span>⭐ スコア:</span> 
-          <span className="highlight">{gameStats.score}</span>
-        </div>
-        <div className="stat-item">
           <span>🎯 フィールドの魚:</span> 
           <span>{gameStats.fishItems}</span>
+        </div>
+        <div className="stat-item">
+          <span>🧶 フィールドの毛糸玉:</span> 
+          <span>{gameStats.yarnItems}</span>
         </div>
         <div className="stat-item">
           <span>👥 プレイヤー:</span> 

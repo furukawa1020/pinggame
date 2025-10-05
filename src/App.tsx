@@ -2,7 +2,7 @@ import React, { Suspense, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, Stars } from '@react-three/drei';
 import { Physics } from '@react-three/cannon';
-import { GameScene } from './components/3D/GameScene';
+import GameScene from './components/3D/NewGameScene';
 import { UI } from './components/UI/UI';
 import { GameProvider } from './context/GameContext';
 import { AIProvider } from './context/AIContext';

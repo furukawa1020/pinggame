@@ -1,0 +1,57 @@
+/* 基本リセット */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow: hidden;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* カーソルスタイル */
+canvas {
+  cursor: grab;
+}
+
+canvas:active {
+  cursor: grabbing;
+}
+
+/* 基本的なアニメーション */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* ゲーム用のフォント */
+.game-text {
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+/* 毛糸風のテキスト */
+.yarn-text {
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  color: #FF69B4;
+  text-shadow: 
+    1px 1px 2px rgba(255,182,193,0.8),
+    -1px -1px 2px rgba(255,105,180,0.6);
+  font-weight: bold;
+}

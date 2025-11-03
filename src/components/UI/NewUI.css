@@ -189,8 +189,8 @@
 }
 
 .highlight {
-  color: #FF8C00 !important;
-  font-weight: 800 !important;
+  color: #FF8C00;
+  font-weight: 800;
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 140, 0, 0.2) 100%);
   padding: 4px 10px;
   border-radius: 8px;
@@ -602,5 +602,29 @@
   }
   50% {
     box-shadow: 0 4px 16px rgba(255, 215, 0, 0.4);
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .highlight.level,
+  .highlight.score {
+    animation: none;
+  }
+  
+  .floating-decoration {
+    animation: none;
+  }
+  
+  .status-indicator::before {
+    animation: none;
+  }
+  
+  .progress-fill::after {
+    animation: none;
+  }
+  
+  .ui-overlay > * {
+    animation: none;
   }
 }

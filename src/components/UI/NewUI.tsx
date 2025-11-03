@@ -5,10 +5,10 @@ import './NewUI.css';
 
 // Floating decoration component
 const FloatingDecoration: React.FC<{ emoji: string; delay: number; duration: number }> = ({ emoji, delay, duration }) => {
-  const [position] = useState({
+  const position = React.useMemo(() => ({
     left: Math.random() * 80 + 10,
     top: Math.random() * 80 + 10,
-  });
+  }), []);
   
   return (
     <div

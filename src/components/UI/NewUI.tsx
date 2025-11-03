@@ -3,6 +3,28 @@ import { useSocket } from '../../context/SocketContext';
 import { useAI } from '../../context/AIContext';
 import './NewUI.css';
 
+// Floating decoration component
+const FloatingDecoration: React.FC<{ emoji: string; delay: number; duration: number }> = ({ emoji, delay, duration }) => {
+  const [position] = useState({
+    left: Math.random() * 80 + 10,
+    top: Math.random() * 80 + 10,
+  });
+  
+  return (
+    <div
+      className="floating-decoration"
+      style={{
+        left: `${position.left}%`,
+        top: `${position.top}%`,
+        animationDelay: `${delay}s`,
+        animationDuration: `${duration}s`,
+      }}
+    >
+      {emoji}
+    </div>
+  );
+};
+
 export const UI: React.FC = () => {
   const { isConnected, serverStatus, joinGame, sendPenguinAction, sendAITraining } = useSocket();
   const { isAIActive, aiPerformance, trainingProgress, startAITraining, stopAITraining } = useAI();
@@ -111,6 +133,14 @@ export const UI: React.FC = () => {
 
   return (
     <div className="ui-overlay">
+      {/* Floating decorations */}
+      <FloatingDecoration emoji="🐧" delay={0} duration={6} />
+      <FloatingDecoration emoji="🧶" delay={1} duration={7} />
+      <FloatingDecoration emoji="🐟" delay={2} duration={5.5} />
+      <FloatingDecoration emoji="🧶" delay={3} duration={6.5} />
+      <FloatingDecoration emoji="🐧" delay={4} duration={8} />
+      <FloatingDecoration emoji="✨" delay={1.5} duration={7} />
+      
       {/* 接続状態 */}
       <div className="connection-status">
         <div className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}>

@@ -31,7 +31,7 @@
 ### 2. CD (Continuous Deployment) - `.github/workflows/cd.yml`
 
 **トリガー条件:**
-- `main` ブランチへのプッシュ
+- CI ワークフローが `main` ブランチで成功した後に自動実行
 - 手動トリガー（workflow_dispatch）
 
 **ジョブ構成:**
@@ -43,6 +43,7 @@
 
 **環境:**
 - 本番環境（production）での実行
+- CI ワークフローが成功した場合のみ実行
 
 ### 3. Code Quality - `.github/workflows/code-quality.yml`
 

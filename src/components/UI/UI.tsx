@@ -105,7 +105,6 @@ export const UI: React.FC = () => {
           <span>🧶 フィールドの毛糸:</span> <span>{gameStats.yarnItems}</span>
         </div>
       </div>
-      </div>
 
       {/* AI制御パネル */}
       <div className="ai-control-panel">

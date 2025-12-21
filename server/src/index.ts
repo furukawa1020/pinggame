@@ -45,7 +45,7 @@ interface Penguin {
   behavior: string;
 }
 
-let gameState = {
+const gameState = {
   players: new Map(),
   penguins: [] as Penguin[],
   fishItems: [],

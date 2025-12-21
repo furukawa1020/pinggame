@@ -2,6 +2,13 @@
 
 最新式ニューラルネットワーク搭載の究極毛糸ペンギンゲーム！
 
+![CI Status](https://github.com/furukawa1020/pinggame/workflows/CI/badge.svg)
+![CD Status](https://github.com/furukawa1020/pinggame/workflows/CD/badge.svg)
+
+## 📚 **ドキュメント**
+
+- [CI/CD パイプライン構成](docs/CI-CD.md) - GitHub Actions を使用した自動ビルド・テスト・デプロイ
+
 ## 🚀 **セットアップ手順**
 
 ### 1. 依存関係のインストール

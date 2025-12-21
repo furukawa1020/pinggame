@@ -63,6 +63,7 @@ export class PenguinBehaviorModel {
     });
 
     // Advanced optimizer with adaptive learning rate
+    // Parameters: learningRate, beta1, beta2, epsilon
     const optimizer = tf.train.adam(0.001, 0.9, 0.999, 1e-8);
 
     model.compile({

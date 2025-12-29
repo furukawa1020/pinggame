@@ -30,7 +30,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '3.2.3'
           bundler-cache: true
           working-directory: rails-backend
       
@@ -51,7 +51,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '3.2.3'
           bundler-cache: true
           working-directory: rails-backend
       
@@ -77,7 +77,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '3.2.3'
           bundler-cache: true
           working-directory: rails-backend
       
@@ -104,13 +104,9 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '3.2.3'
           bundler-cache: true
           working-directory: rails-backend
-      
-      - name: Precompile assets
-        run: bundle exec rails assets:precompile RAILS_ENV=production
-        continue-on-error: true
       
       - name: Deploy notification
         run: |

@@ -144,7 +144,7 @@ export const UI: React.FC = () => {
       {/* 接続状態 */}
       <div className="connection-status">
         <div className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}>
-          {isConnected ? '🟢 <ruby>接続済<rt>せつぞくず</rt></ruby>み' : '🔴 <ruby>切断中<rt>せつだんちゅう</rt></ruby>'}
+          {isConnected ? '🟢 <ruby>接続済み<rt>せつぞくずみ</rt></ruby>' : '🔴 <ruby>切断中<rt>せつだんちゅう</rt></ruby>'}
         </div>
         {serverStatus && (
           <div className="server-status">
@@ -196,7 +196,7 @@ export const UI: React.FC = () => {
           <span>パフォーマンス: {Math.round((aiPerformance || 0) * 100)}%</span>
         </div>
         <div className="training-progress">
-          <span><ruby>学習<rt>がくしゅう</rt></ruby><ruby>進捗<rt>しんちょく</rt></ruby>: {Math.round((trainingProgress || 0) * 100)}%</span>
+          <span><ruby>学習進捗<rt>がくしゅうしんちょく</rt></ruby>: {Math.round((trainingProgress || 0) * 100)}%</span>
           <div className="progress-bar">
             <div 
               className="progress-fill" 

@@ -144,7 +144,11 @@ export const UI: React.FC = () => {
       {/* 接続状態 */}
       <div className="connection-status">
         <div className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}>
-          {isConnected ? '🟢 接続済み' : '🔴 切断中'}
+          {isConnected ? (
+            <>🟢 <ruby>接続済み<rt>せつぞくずみ</rt></ruby></>
+          ) : (
+            <>🔴 <ruby>切断中<rt>せつだんちゅう</rt></ruby></>
+          )}
         </div>
         {serverStatus && (
           <div className="server-status">
@@ -155,7 +159,7 @@ export const UI: React.FC = () => {
 
       {/* ゲーム統計 */}
       <div className="game-stats">
-        <h3>🎮 ゲーム統計</h3>
+        <h3>🎮 ゲーム<ruby>統計<rt>とうけい</rt></ruby></h3>
         <div className="stat-item">
           <span>🏆 レベル:</span> 
           <span className="highlight level">{gameStats.level}</span>
@@ -165,19 +169,19 @@ export const UI: React.FC = () => {
           <span className="highlight score">{gameStats.score}</span>
         </div>
         <div className="stat-item">
-          <span>🐟 獲得した魚:</span> 
+          <span>🐟 <ruby>獲得<rt>かくとく</rt></ruby>した<ruby>魚<rt>さかな</rt></ruby>:</span> 
           <span className="highlight">{gameStats.fish}</span>
         </div>
         <div className="stat-item">
-          <span>🧶 毛糸玉:</span> 
+          <span>🧶 <ruby>毛糸玉<rt>けいとだま</rt></ruby>:</span> 
           <span className="highlight">{gameStats.yarnBalls}</span>
         </div>
         <div className="stat-item">
-          <span>🎯 フィールドの魚:</span> 
+          <span>🎯 フィールドの<ruby>魚<rt>さかな</rt></ruby>:</span> 
           <span>{gameStats.fishItems}</span>
         </div>
         <div className="stat-item">
-          <span>🧶 フィールドの毛糸玉:</span> 
+          <span>🧶 フィールドの<ruby>毛糸玉<rt>けいとだま</rt></ruby>:</span> 
           <span>{gameStats.yarnItems}</span>
         </div>
         <div className="stat-item">
@@ -188,15 +192,22 @@ export const UI: React.FC = () => {
 
       {/* AI制御パネル */}
       <div className="ai-controls">
-        <h3>🤖 AI制御</h3>
+        <h3>🤖 AI<ruby>制御<rt>せいぎょ</rt></ruby></h3>
         <div className="ai-status">
-          <span>状態: {isAIActive ? '🟢 稼働中' : '🔴 停止中'}</span>
+          <span>
+            <ruby>状態<rt>じょうたい</rt></ruby>:{' '}
+            {isAIActive ? (
+              <>🟢 <ruby>稼働中<rt>かどうちゅう</rt></ruby></>
+            ) : (
+              <>🔴 <ruby>停止中<rt>ていしちゅう</rt></ruby></>
+            )}
+          </span>
         </div>
         <div className="ai-performance">
           <span>パフォーマンス: {Math.round((aiPerformance || 0) * 100)}%</span>
         </div>
         <div className="training-progress">
-          <span>学習進捗: {Math.round((trainingProgress || 0) * 100)}%</span>
+          <span><ruby>学習進捗<rt>がくしゅうしんちょく</rt></ruby>: {Math.round((trainingProgress || 0) * 100)}%</span>
           <div className="progress-bar">
             <div 
               className="progress-fill" 
@@ -208,7 +219,11 @@ export const UI: React.FC = () => {
           className="ai-training-button"
           onClick={handleAITraining}
         >
-          {isAIActive ? '🛑 AI停止' : '🚀 AI開始'}
+          {isAIActive ? (
+            <>🛑 AI<ruby>停止<rt>ていし</rt></ruby></>
+          ) : (
+            <>🚀 AI<ruby>開始<rt>かいし</rt></ruby></>
+          )}
         </button>
       </div>
 
@@ -220,10 +235,10 @@ export const UI: React.FC = () => {
           onClick={handlePenguinAction}
           disabled={!isConnected}
         >
-          🐧 ペンギン移動
+          🐧 ペンギン<ruby>移動<rt>いどう</rt></ruby>
         </button>
         <div className="help-text">
-          💡 魚をクリックして獲得しよう！
+          💡 <ruby>魚<rt>さかな</rt></ruby>をクリックして<ruby>獲得<rt>かくとく</rt></ruby>しよう！
         </div>
       </div>
     </div>

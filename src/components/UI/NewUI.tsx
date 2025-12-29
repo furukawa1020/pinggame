@@ -144,7 +144,11 @@ export const UI: React.FC = () => {
       {/* 接続状態 */}
       <div className="connection-status">
         <div className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}>
-          {isConnected ? '🟢 <ruby>接続済み<rt>せつぞくずみ</rt></ruby>' : '🔴 <ruby>切断中<rt>せつだんちゅう</rt></ruby>'}
+          {isConnected ? (
+            <>🟢 <ruby>接続済み<rt>せつぞくずみ</rt></ruby></>
+          ) : (
+            <>🔴 <ruby>切断中<rt>せつだんちゅう</rt></ruby></>
+          )}
         </div>
         {serverStatus && (
           <div className="server-status">
@@ -190,7 +194,14 @@ export const UI: React.FC = () => {
       <div className="ai-controls">
         <h3>🤖 AI<ruby>制御<rt>せいぎょ</rt></ruby></h3>
         <div className="ai-status">
-          <span><ruby>状態<rt>じょうたい</rt></ruby>: {isAIActive ? '🟢 <ruby>稼働中<rt>かどうちゅう</rt></ruby>' : '🔴 <ruby>停止中<rt>ていしちゅう</rt></ruby>'}</span>
+          <span>
+            <ruby>状態<rt>じょうたい</rt></ruby>:{' '}
+            {isAIActive ? (
+              <>🟢 <ruby>稼働中<rt>かどうちゅう</rt></ruby></>
+            ) : (
+              <>🔴 <ruby>停止中<rt>ていしちゅう</rt></ruby></>
+            )}
+          </span>
         </div>
         <div className="ai-performance">
           <span>パフォーマンス: {Math.round((aiPerformance || 0) * 100)}%</span>
@@ -208,7 +219,11 @@ export const UI: React.FC = () => {
           className="ai-training-button"
           onClick={handleAITraining}
         >
-          {isAIActive ? '🛑 AI<ruby>停止<rt>ていし</rt></ruby>' : '🚀 AI<ruby>開始<rt>かいし</rt></ruby>'}
+          {isAIActive ? (
+            <>🛑 AI<ruby>停止<rt>ていし</rt></ruby></>
+          ) : (
+            <>🚀 AI<ruby>開始<rt>かいし</rt></ruby></>
+          )}
         </button>
       </div>
 

@@ -85,24 +85,24 @@ export const UI: React.FC = () => {
 
       {/* ゲーム統計 */}
       <div className="game-stats">
-        <h3>🎮 ゲーム統計</h3>
+        <h3>🎮 ゲーム<ruby>統計<rt>とうけい</rt></ruby></h3>
         <div className="stat-item">
           <span>👥 プレイヤー:</span> <span>{gameStats.players}</span>
         </div>
         <div className="stat-item">
-          <span>� 獲得した魚:</span> <span className="highlight">{gameStats.fish}</span>
+          <span>🐟 <ruby>獲得<rt>かくとく</rt></ruby>した<ruby>魚<rt>さかな</rt></ruby>:</span> <span className="highlight">{gameStats.fish}</span>
         </div>
         <div className="stat-item">
-          <span>🧶 毛糸玉:</span> <span className="highlight">{gameStats.yarnBalls}</span>
+          <span>🧶 <ruby>毛糸玉<rt>けいとだま</rt></ruby>:</span> <span className="highlight">{gameStats.yarnBalls}</span>
         </div>
         <div className="stat-item">
           <span>⭐ スコア:</span> <span className="highlight">{gameStats.score}</span>
         </div>
         <div className="stat-item">
-          <span>🎯 フィールドの魚:</span> <span>{gameStats.fishItems}</span>
+          <span>🎯 フィールドの<ruby>魚<rt>さかな</rt></ruby>:</span> <span>{gameStats.fishItems}</span>
         </div>
         <div className="stat-item">
-          <span>🧶 フィールドの毛糸:</span> <span>{gameStats.yarnItems}</span>
+          <span>🧶 フィールドの<ruby>毛糸<rt>けいと</rt></ruby>:</span> <span>{gameStats.yarnItems}</span>
         </div>
       </div>
 

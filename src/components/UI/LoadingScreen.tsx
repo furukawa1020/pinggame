@@ -11,7 +11,7 @@ export const LoadingScreen: React.FC = () => {
           <div className="yarn-ball"></div>
         </div>
         <h1 className="loading-title">🧶 わたわたペンギンニットワールド 🧶</h1>
-        <p className="loading-subtitle">フルスタック毛糸ペンギンAIワールドを起動中...</p>
+        <p className="loading-subtitle">フルスタック<ruby>毛糸<rt>けいと</rt></ruby>ペンギンAIワールドを<ruby>起動中<rt>きどうちゅう</rt></ruby>...</p>
         <div className="loading-features">
           <div className="feature-item">✨ React + Three.js 3Dワールド</div>
           <div className="feature-item">🧠 TensorFlow.js AIシステム</div>

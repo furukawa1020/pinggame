@@ -1,0 +1,115 @@
+name: Rails CI/CD
+
+on:
+  push:
+    branches: [ main, develop, copilot/** ]
+    paths:
+      - 'rails-backend/**'
+      - '.github/workflows/rails-ci-cd.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'rails-backend/**'
+      - '.github/workflows/rails-ci-cd.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (RuboCop)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rails-backend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.3'
+          bundler-cache: true
+          working-directory: rails-backend
+      
+      - name: Run RuboCop
+        run: bundle exec rubocop
+
+  test:
+    name: Test (RSpec)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rails-backend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.3'
+          bundler-cache: true
+          working-directory: rails-backend
+      
+      - name: Setup database
+        run: |
+          bin/rails db:create RAILS_ENV=test
+          bin/rails db:migrate RAILS_ENV=test
+      
+      - name: Run tests
+        run: bundle exec rspec
+
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rails-backend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.3'
+          bundler-cache: true
+          working-directory: rails-backend
+      
+      - name: Run Brakeman
+        run: bundle exec brakeman --no-pager
+      
+      - name: Run Bundler Audit
+        run: bundle exec bundler-audit check --update
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [lint, test, security]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    defaults:
+      run:
+        working-directory: rails-backend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.3'
+          bundler-cache: true
+          working-directory: rails-backend
+      
+      - name: Deploy notification
+        run: |
+          echo "🚀 Rails backend deployment ready!"
+          echo "Configure your deployment target (e.g., Heroku, AWS, Railway, etc.)"
+          echo "Database migrations should be run on the production server"

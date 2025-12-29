@@ -6,6 +6,8 @@
 
 ### 1. CI (Continuous Integration) - `.github/workflows/ci.yml`
 
+**対象:** Node.js/TypeScript バックエンド & フロントエンド
+
 **トリガー条件:**
 - `main`, `develop`, `copilot/**` ブランチへのプッシュ
 - `main`, `develop` ブランチへのプルリクエスト
@@ -28,7 +30,38 @@
 **依存関係:**
 - Build ジョブは Lint と Test の成功後に実行
 
-### 2. CD (Continuous Deployment) - `.github/workflows/cd.yml`
+### 2. Rails CI/CD - `.github/workflows/rails-ci-cd.yml`
+
+**対象:** Ruby on Rails API バックエンド
+
+**トリガー条件:**
+- `main`, `develop`, `copilot/**` ブランチへのプッシュ（`rails-backend/**` パスの変更時）
+- `main`, `develop` ブランチへのプルリクエスト（`rails-backend/**` パスの変更時）
+
+**ジョブ構成:**
+
+#### Lint ジョブ (RuboCop)
+- Rubyコードスタイルと品質のチェック
+- RuboCop による静的解析
+
+#### Test ジョブ (RSpec)
+- RSpec を使用した単体テスト実行
+- データベーステストの実行
+
+#### Security ジョブ
+- Brakeman による静的セキュリティ解析
+- Bundler Audit による依存関係の脆弱性チェック
+
+#### Deploy ジョブ
+- Rails 本番環境へのデプロイ準備
+- `main` ブランチでのみ実行
+
+**依存関係:**
+- Deploy ジョブは Lint, Test, Security の成功後に実行
+
+### 3. CD (Continuous Deployment) - `.github/workflows/cd.yml`
+
+**対象:** Node.js バックエンド
 
 **トリガー条件:**
 - CI ワークフローが `main` ブランチで成功した後に自動実行
@@ -45,7 +78,9 @@
 - 本番環境（production）での実行
 - CI ワークフローが成功した場合のみ実行
 
-### 3. Code Quality - `.github/workflows/code-quality.yml`
+### 4. Code Quality - `.github/workflows/code-quality.yml`
+
+**対象:** Node.js/TypeScript
 
 **トリガー条件:**
 - `main`, `develop` ブランチへのプッシュまたはプルリクエスト
@@ -66,6 +101,7 @@
 
 CI/CD パイプラインと同じチェックをローカルで実行できます：
 
+#### Node.js/TypeScript
 ```bash
 # リント実行
 npm run lint
@@ -78,6 +114,21 @@ npm run build
 
 # 型チェック
 npx tsc --noEmit
+```
+
+#### Ruby on Rails
+```bash
+cd rails-backend
+
+# リント実行
+bundle exec rubocop
+
+# テスト実行
+bundle exec rspec
+
+# セキュリティチェック
+bundle exec brakeman
+bundle exec bundler-audit check --update
 ```
 
 ### ブランチ戦略
